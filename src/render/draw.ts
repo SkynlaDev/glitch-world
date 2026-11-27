@@ -70,7 +70,8 @@ export function draw() {
     ctx.fillStyle = '#ff2e8833'; ctx.strokeStyle = '#ff2e88'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(X(G.tele.x), Y(G.tele.y), 2.5 * S, 0, TAU); ctx.fill(); ctx.stroke();
   }
-  const gp = (S / 16) * 1.6;
+  // Taille d un pixel source des cubes : le cube cyan fait 0,3 u (Steven fait 1,6 u).
+  const gp = S * 0.04;
   for (const o of G.orbs) {
     if (!vis(o.x, o.y)) continue;
     // Paliers : 1 = cube cyan, 5+ = magenta plus gros, 25+ = jaune qui « bugue » par à-coups.
