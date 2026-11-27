@@ -83,7 +83,7 @@ export function castChain(w: Weapon, x: number, y: number, from: number, depth: 
   for (let e = 1; e <= s.echo; e++) G.later.push({ t: ECHO_DT * e, fn: () => fire(e) });
 }
 
-/** Une onde : touche les ennemis du disque, les repousse ou les aspire, signale chaque kill. Rend le nombre de touchés. */
+/** Une onde : touche les ennemis du disque, les repousse (ou les aspire avec Inversion), signale chaque kill. Rend le nombre de touchés. */
 function pulse(w: Weapon, p: Pulse, dm: number, pull: boolean, onKill: (x: number, y: number) => void, col: string): number {
   let n = 0;
   near(p.x, p.y, p.r + 1.5, (e) => {
@@ -94,7 +94,7 @@ function pulse(w: Weapon, p: Pulse, dm: number, pull: boolean, onKill: (x: numbe
     if (e.dead) { onKill(e.x, e.y); return }
     if (e.d.noKnock) return;
     if (pull) { const f = Math.min(9, d * 4); e.kx -= (dx / d) * f; e.ky -= (dy / d) * f }
-    else if (w.sp.knock) { e.kx += (dx / d) * 7; e.ky += (dy / d) * 7 }
+    else { e.kx += (dx / d) * 7; e.ky += (dy / d) * 7 } // L'onde de choc repousse toujours (sauf Inversion, qui aspire).
   });
   fxp('ring', p.x, p.y, col, p.r);
   return n;

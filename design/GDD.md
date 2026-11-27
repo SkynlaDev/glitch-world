@@ -28,7 +28,7 @@ Poids de tirage à la minute m : `[max(30, 60−3m), 25+m, 10+m, 4+0,6m, 1+0,4m]
 
 | Arme | Dégâts | Délai | Zone (plafond) | Spéciales |
 | --- | --- | --- | --- | --- |
-| Haltère Ego (Steven) | 10 | 1,6 s | rayon 2,5 (8) | Aucune : critiques à la place |
+| Haltère Ego (Steven) | 10 | 1,6 s | rayon 2,5 (8) | Aucune : l’onde de choc repousse toujours (Inversion aspire), critiques à la place |
 | Épée | 14 | 1,2 s | portée 2 (8) | Frappe des deux côtés |
 | Arc | 12 | 1 s | portée 8 (12) | +flèches (max 12) |
 | Météorite | 35 | 3 s | zone 2 (8) | +météorites (max 8) |

@@ -87,6 +87,13 @@ describe('cartes', () => {
     for (let i = 0; i < 300; i++) for (const c of makeCards()) if (c.key?.startsWith('main')) keys.add(c.key.slice(4));
     expect([...keys].sort()).toEqual(['crit', 'critD', 'dmg', 'spd', 'zone']);
   });
+  it("l'onde de choc repousse les zombies dès le départ, sans carte", () => {
+    const e = spawn('zombie', false, G.p.x + 1, G.p.y);
+    e.hp = e.max = 1000;
+    buildGrid();
+    castChain(G.main, G.p.x, G.p.y, 0, 0, 2.5, 10, true);
+    expect(e.kx).toBeGreaterThan(0);
+  });
   it('coup critique : chance plafonnée à 60 %, dégâts ×1,5 de base', () => {
     expect(wCrit(G.main)).toBeCloseTo(0.05);
     expect(wCritD(G.main)).toBe(1.5);
