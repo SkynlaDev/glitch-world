@@ -32,11 +32,14 @@ export interface Special { k: string; n: string; bin?: 1; max?: number }
 export interface WeaponDef { n: string; dmg: number; cd: number; zone: number; zl: string; cap: number; desc?: string; sp: Special[] }
 
 export const WD: Record<WeaponId, WeaponDef> = {
-  main: { n: 'Haltère Ego', dmg: 18, cd: 1.6, zone: 2.5, zl: 'rayon', cap: 8, sp: [{ k: 'knock', n: 'Recul des ennemis', bin: 1 }, { k: 'double', n: 'Double onde', bin: 1 }] },
+  // Pas de spécial : les répétitions (double onde, échos…) viennent uniquement des fragments de code.
+  main: { n: 'Haltère Ego', dmg: 10, cd: 1.6, zone: 2.5, zl: 'rayon', cap: 8, sp: [] },
   epee: { n: 'Épée', dmg: 14, cd: 1.2, zone: 2, zl: 'portée', cap: 8, desc: 'Coup large à 180°, alterné gauche et droite. 14 dégâts toutes les 1,2 s.', sp: [{ k: 'both', n: 'Frappe des deux côtés', bin: 1 }] },
   arc: { n: 'Arc', dmg: 12, cd: 1, zone: 8, zl: 'portée', cap: 12, desc: "Flèche sur l'ennemi le plus proche, traverse 1 ennemi. 12 dégâts toutes les 1 s.", sp: [{ k: 'count', n: 'flèche', max: 12 }] },
   meteo: { n: 'Météorite', dmg: 35, cd: 3, zone: 2, zl: 'zone', cap: 8, desc: 'Tombe sur le plus gros groupe. 35 dégâts en zone toutes les 3 s.', sp: [{ k: 'count', n: 'météorite', max: 8 }] },
 };
+/** Coups critiques de l'arme principale : chance et multiplicateur de base, plafond de chance. */
+export const CRIT = { chance: 0.05, mult: 1.5, cap: 0.6 };
 export const SECONDARY: WeaponId[] = ['epee', 'arc', 'meteo'];
 
 export type EnemyType = 'zombie' | 'livreur' | 'casseur' | 'videur' | 'fetard';

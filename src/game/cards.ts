@@ -1,7 +1,8 @@
 import { R, fmt, pick } from '../core/util';
 import { BAB, MODE, RAR, SECONDARY, WD } from '../data/game-data';
 import { ICON } from '../data/icons';
-import { G, bv, newW, surcharges, wDelay, wZone, type Card, type Weapon } from './state';
+import { CRIT } from '../data/game-data';
+import { G, bv, newW, surcharges, wCrit, wDelay, wZone, type Card, type Weapon } from './state';
 
 /** Tire une rareté ; les poids montent avec le temps. min = rareté minimale (index). */
 export function rollR(min = 0): number {
@@ -14,7 +15,7 @@ export function rollR(min = 0): number {
 
 /** Carte d'amélioration d'arme. Une stat au plafond devient une carte « débordement » (+dégâts). */
 export function wCard(w: Weapon, r: number): Card {
-  const d = WD[w.id], m = RAR[r].m, ii = RAR[r].i, opts = ['dmg', 'spd', 'zone', ...d.sp.map((s) => s.k)], k = pick(opts);
+  const d = WD[w.id], m = RAR[r].m, ii = RAR[r].i, opts = ['dmg', 'spd', 'zone', ...(w.id === 'main' ? ['crit', 'critD'] : []), ...d.sp.map((s) => s.k)], k = pick(opts);
   const base = { r, icon: ICON[w.id], lv: `Niv ${w.lv} → ${w.lv + 1}`, key: w.id + k };
   const mkc = (tag: string, title: string, desc: string, fn: () => void): Card =>
     ({ ...base, tag, title, desc, apply: () => { fn(); w.lv++; G.dirty = 1 } });
@@ -22,6 +23,8 @@ export function wCard(w: Weapon, r: number): Card {
   if (k === 'dmg') return mkc('Arme', `${d.n} : dégâts`, `+${fmt(10 * m)} % de dégâts de base`, () => (w.dmg += 0.1 * m));
   if (k === 'spd') return wDelay(w) <= 0.301 * (w.id === 'main' ? 1.25 ** surcharges() : 1) ? over() : mkc('Arme', `${d.n} : cadence`, `+${fmt(6 * m)} % de vitesse d'attaque`, () => (w.spd += 0.06 * m));
   if (k === 'zone') return wZone(w) >= d.cap - 0.01 ? over() : mkc('Arme', `${d.n} : ${d.zl}`, `+${fmt(10 * m)} % de ${d.zl}`, () => (w.zone += 0.1 * m));
+  if (k === 'crit') return wCrit(w) >= CRIT.cap - 0.001 ? over() : mkc('Arme', `${d.n} : critique`, `+${fmt(4 * m)} points de chance de coup critique`, () => (w.crit += 0.04 * m));
+  if (k === 'critD') return mkc('Arme', `${d.n} : dégâts critiques`, `+${fmt(20 * m)} % de dégâts sur un coup critique`, () => (w.critD += 0.2 * m));
   const s = d.sp.find((x) => x.k === k)!;
   if (s.bin) return w.sp[k] ? over() : mkc('Arme · carte spéciale', `${d.n} : ${s.n}`, 'Une fois, puis débordement', () => (w.sp[k] = 1));
   const cur = w.sp[k] || 1;

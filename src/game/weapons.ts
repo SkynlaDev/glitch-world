@@ -14,7 +14,6 @@ export const FIRE: Record<WeaponId, (w: Weapon) => void> = {
   main: (w) => {
     const p = G.p;
     fireMain(w, p.x, p.y);
-    if (w.sp.double) { const x = p.x, y = p.y; G.later.push({ t: 0.35, fn: () => fireMain(w, x, y) }) }
   },
   epee: (w) => {
     const p = G.p, rg = wZone(w), dm = wDmg(w), sides = w.sp.both ? [1, -1] : [(w.side = -w.side)];

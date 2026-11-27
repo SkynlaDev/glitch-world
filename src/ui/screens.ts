@@ -5,7 +5,7 @@ import { FICON, ICON } from '../data/icons';
 import { FRAG, SLOTS } from '../data/fragments';
 import { describeChain, fragAt as at, swapFrag, type FragPos as Pos, type FragPos } from '../game/chain';
 import { makeCards } from '../game/cards';
-import { G, bv, hooks, newGame, settings, wDelay, wDmg, wZone, type Card } from '../game/state';
+import { G, bv, hooks, newGame, settings, wCrit, wCritD, wDelay, wDmg, wZone, type Card } from '../game/state';
 import { SPR, sil } from '../render/sprites';
 
 export const $ = (id: string) => document.getElementById(id)!;
@@ -55,7 +55,7 @@ function buildList() {
   for (const w of [G.main, G.sec]) {
     if (!w) continue;
     const d = WD[w.id], sp = Object.entries(w.sp).map(([k, v]) => (k === 'count' ? `${v} ${d.sp[0].n}s` : d.sp.find((x) => x.k === k)!.n));
-    add(ICON[w.id], `${d.n} niv ${w.lv} : ${fmt(wDmg(w))} dégâts toutes les ${fmt(wDelay(w))} s, ${d.zl} ${fmt(wZone(w))} u${sp.length ? ' · ' + sp.join(', ') : ''}${w.over ? ` · débordement +${fmt(w.over * 100)} %` : ''}`);
+    add(ICON[w.id], `${d.n} niv ${w.lv} : ${fmt(wDmg(w))} dégâts toutes les ${fmt(wDelay(w))} s, ${d.zl} ${fmt(wZone(w))} u · critique ${fmt(wCrit(w) * 100)} % ×${fmt(wCritD(w))}${sp.length ? ' · ' + sp.join(', ') : ''}${w.over ? ` · débordement +${fmt(w.over * 100)} %` : ''}`);
   }
   for (const f of G.slots) if (f) add(FICON[f], `Fragment ${FRAG[f].n} (${FRAG[f].code})`);
   if (G.slots.some(Boolean)) add(FICON.boucle, describeChain(G.slots).join(' '));

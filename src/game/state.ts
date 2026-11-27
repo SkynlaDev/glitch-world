@@ -1,7 +1,9 @@
-import { WD, need, type BaubleId, type EnemyDef, type EnemyType, type WeaponId } from '../data/game-data';
+import { CRIT, WD, need, type BaubleId, type EnemyDef, type EnemyType, type WeaponId } from '../data/game-data';
 import { CARRIER, HACKER, SLOTS, type FragId } from '../data/fragments';
 
-export interface Weapon { id: WeaponId; dmg: number; spd: number; zone: number; over: number; sp: Record<string, number>; t: number; side: number; lv: number }
+export interface Weapon { id: WeaponId; dmg: number; spd: number; zone: number; over: number;
+  /** Bonus de chance de critique (0,05 = +5 points) et de dégâts critiques (0,2 = +20 %). */
+  crit: number; critD: number; sp: Record<string, number>; t: number; side: number; lv: number }
 export interface Player { x: number; y: number; hp: number; maxhp: number; face: number; inv: number; slow: number; st: number; dec: number; lastHit: number; mv: boolean;
   /** Direction 0–7 dans l'ordre des planches : S, SE, E, NE, N, NW, W, SW. */
   dir: number;
@@ -18,7 +20,7 @@ export interface Enemy {
 export interface Projectile { x: number; y: number; vx: number; vy: number; life: number; dm: number; pierce: number; hs: Set<Enemy> }
 export interface EnemyShot { x: number; y: number; vx: number; vy: number; life: number }
 export interface Fx { k: 'ring' | 'arc' | 'boom' | 'pop'; x: number; y: number; c: string; r: number; dir: number; t: number }
-export interface DmgNum { x: number; y: number; v: number; t: number }
+export interface DmgNum { x: number; y: number; v: number; t: number; crit?: boolean }
 /** t = âge (s) ; vx, vy = petit saut à l'apparition, avant que l'aimant puisse l'attirer. */
 export interface Orb { x: number; y: number; v: number; mag: number; t: number; vx: number; vy: number }
 export interface Puddle { x: number; y: number; life: number }
@@ -74,7 +76,7 @@ export const hooks = {
   hack: () => {},
 };
 
-export const newW = (id: WeaponId): Weapon => ({ id, dmg: 0, spd: 0, zone: 0, over: 0, sp: {}, t: 0.4, side: 1, lv: 1 });
+export const newW = (id: WeaponId): Weapon => ({ id, dmg: 0, spd: 0, zone: 0, over: 0, crit: 0, critD: 0, sp: {}, t: 0.4, side: 1, lv: 1 });
 
 export function newGame(): Game {
   G = {
@@ -110,5 +112,8 @@ export const wDmg = (w: Weapon) => WD[w.id].dmg * (1 + w.dmg + w.over) * (1 + bD
 export const wDelay = (w: Weapon) => Math.max(0.3, WD[w.id].cd / ((1 + w.spd) * (1 + bSpd()))) * (w.id === 'main' ? 1.25 ** surcharges() : 1);
 /** Nombre de Surcharge actives dans l'arme (chacune ralentit la cadence de 25 %). */
 export const surcharges = () => G.slots.filter((f) => f === 'surcharge').length;
+/** Chance de critique (plafonnée) et multiplicateur des dégâts critiques. */
+export const wCrit = (w: Weapon) => Math.min(CRIT.cap, CRIT.chance + w.crit);
+export const wCritD = (w: Weapon) => CRIT.mult + w.critD;
 /** Rayon / portée / zone, plafonné par arme. */
 export const wZone = (w: Weapon) => Math.min(WD[w.id].cap, WD[w.id].zone * (1 + w.zone) * (1 + bZone()));

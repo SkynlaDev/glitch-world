@@ -1,6 +1,6 @@
-import { TAU, hyp } from '../core/util';
+import { R, TAU, hyp } from '../core/util';
 import type { FragId } from '../data/fragments';
-import { G, hooks, shake, type Weapon } from './state';
+import { G, hooks, shake, wCrit, wCritD, type Weapon } from './state';
 import { fxp, hit, near } from './world';
 
 /** Ce que produit la lecture d'une chaîne de fragments, de gauche à droite à partir de `from`. */
@@ -89,7 +89,8 @@ function pulse(w: Weapon, p: Pulse, dm: number, pull: boolean, onKill: (x: numbe
   near(p.x, p.y, p.r + 1.5, (e) => {
     const dx = e.x - p.x, dy = e.y - p.y, d = hyp(dx, dy) || 1;
     if (d >= p.r + e.r) return;
-    hit(e, dm); n++;
+    const c = R() < wCrit(w);
+    hit(e, c ? dm * wCritD(w) : dm, c); n++;
     if (e.dead) { onKill(e.x, e.y); return }
     if (e.d.noKnock) return;
     if (pull) { const f = Math.min(9, d * 4); e.kx -= (dx / d) * f; e.ky -= (dy / d) * f }

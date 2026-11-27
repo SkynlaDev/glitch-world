@@ -28,10 +28,14 @@ Poids de tirage à la minute m : `[max(30, 60−3m), 25+m, 10+m, 4+0,6m, 1+0,4m]
 
 | Arme | Dégâts | Délai | Zone (plafond) | Spéciales |
 | --- | --- | --- | --- | --- |
-| Haltère Ego (Steven) | 18 | 1,6 s | rayon 2,5 (8) | Recul, Double onde |
+| Haltère Ego (Steven) | 10 | 1,6 s | rayon 2,5 (8) | Aucune : critiques à la place |
 | Épée | 14 | 1,2 s | portée 2 (8) | Frappe des deux côtés |
 | Arc | 12 | 1 s | portée 8 (12) | +flèches (max 12) |
 | Météorite | 35 | 3 s | zone 2 (8) | +météorites (max 8) |
+
+**Améliorations de l'Haltère Ego** : seulement cadence, puissance, chance de critique (+4 points × multiplicateur, 5 % de base, plafond 60 %), dégâts critiques (+20 % × multiplicateur, ×1,5 de base) et rayon. Aucune répétition (double onde, échos, divisions) : elles viennent uniquement des fragments de code, pour que les glitchs aient un vrai intérêt. Un critique s'affiche en jaune avec « ! ».
+
+PV des zombies : 12 × (1 + 0,2 par minute), soit 36 PV à 10 min. Avec 10 dégâts de base, l'haltère ne tue plus en un coup au départ, sauf sur un critique.
 
 ## Babioles
 Protéine (+5 % dégâts), Perche à selfie (+5 % zone), Café serré (+4 % cadence), Gourde (+10 PV max), Pansement (0,3 PV/s), Casque de vélo (−4 % dégâts subis, plancher 40 %), Chaussettes antidérapantes (+5 % vitesse), Aimant (+15 % ramassage), Manuel de triche (+5 % XP), Touche F5 (+1 relance). Valeurs × multiplicateur de rareté.

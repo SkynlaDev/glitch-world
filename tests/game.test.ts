@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BOSSD, HAMMER, MODE, ZOMBIE_VARIANTS, need } from '../src/data/game-data';
 import { bCard, chestCards, makeCards, rollR } from '../src/game/cards';
-import { G, hooks, newGame, wDelay, wDmg, wZone } from '../src/game/state';
+import { G, hooks, newGame, wCrit, wCritD, wDelay, wDmg, wZone } from '../src/game/state';
 import { dirIndex, update } from '../src/game/update';
 import { addXP, buildGrid, hit, spawn, takeFrag } from '../src/game/world';
 import { castChain, compile, describeChain, swapFrag } from '../src/game/chain';
@@ -25,7 +25,7 @@ describe('formules', () => {
     expect(need(10)).toBe(66);
   });
   it('stats de base de l’haltère', () => {
-    expect(wDmg(G.main)).toBe(18);
+    expect(wDmg(G.main)).toBe(10);
     expect(wDelay(G.main)).toBe(1.6);
     expect(wZone(G.main)).toBe(2.5);
   });
@@ -36,7 +36,7 @@ describe('formules', () => {
   });
   it('protéine : +5 % de dégâts par point', () => {
     G.bab.prot = 2;
-    expect(wDmg(G.main)).toBeCloseTo(18 * 1.1);
+    expect(wDmg(G.main)).toBeCloseTo(10 * 1.1);
   });
 });
 
@@ -75,12 +75,32 @@ describe('cartes', () => {
     expect(G.p.maxhp).toBe(130);
     expect(G.p.hp).toBe(130);
   });
-  it('une stat binaire déjà prise devient un débordement', () => {
-    G.main.sp.knock = 1; G.main.sp.double = 1; G.main.spd = 100; G.main.zone = 100;
+  it('une stat au plafond (cadence, rayon, chance de critique) devient un débordement', () => {
+    G.main.spd = 100; G.main.zone = 100; G.main.crit = 1;
     for (let i = 0; i < 50; i++) {
-      const c = makeCards().find((x) => x.key?.startsWith('main') && !x.key.endsWith('dmg'));
+      const c = makeCards().find((x) => x.key?.startsWith('main') && !/(dmg|critD)$/.test(x.key));
       if (c) expect(c.tag).toBe('Arme · débordement');
     }
+  });
+  it("l'haltère ne propose que cadence, puissance, critique, dégâts critiques et rayon : pas de répétition", () => {
+    const keys = new Set<string>();
+    for (let i = 0; i < 300; i++) for (const c of makeCards()) if (c.key?.startsWith('main')) keys.add(c.key.slice(4));
+    expect([...keys].sort()).toEqual(['crit', 'critD', 'dmg', 'spd', 'zone']);
+  });
+  it('coup critique : chance plafonnée à 60 %, dégâts ×1,5 de base', () => {
+    expect(wCrit(G.main)).toBeCloseTo(0.05);
+    expect(wCritD(G.main)).toBe(1.5);
+    G.main.crit = 5;
+    expect(wCrit(G.main)).toBe(0.6);
+    G.main.crit = 1; G.main.critD = 0.5;
+    const es = Array.from({ length: 40 }, (_, i) => spawn('zombie', false, G.p.x + 0.3 + (i % 8) * 0.2, G.p.y + Math.floor(i / 8) * 0.2));
+    for (const e of es) e.hp = e.max = 1000;
+    buildGrid();
+    castChain(G.main, G.p.x, G.p.y, 0, 0, 2.5, 10, true);
+    const lost = es.map((e) => Math.round(1000 - e.hp));
+    expect(lost.every((v) => v === 10 || v === 20)).toBe(true);
+    expect(lost.filter((v) => v === 20).length).toBeGreaterThan(10);
+    expect(G.nums.some((n) => n.crit && n.v === 20)).toBe(true);
   });
 });
 

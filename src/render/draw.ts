@@ -169,8 +169,9 @@ export function draw() {
     ctx.font = `700 ${Math.max(12, S * 0.38)}px ${FONT_T}`;
     for (const n of G.nums) {
       const y = Y(n.y) - n.t * 30;
-      ctx.fillStyle = '#000'; ctx.fillText(String(n.v), X(n.x) + 2, y + 2);
-      ctx.fillStyle = '#fff'; ctx.fillText(String(n.v), X(n.x), y);
+      const t = n.crit ? n.v + '!' : String(n.v);
+      ctx.fillStyle = '#000'; ctx.fillText(t, X(n.x) + 2, y + 2);
+      ctx.fillStyle = n.crit ? '#ffe14d' : '#fff'; ctx.fillText(t, X(n.x), y);
     }
   }
 
