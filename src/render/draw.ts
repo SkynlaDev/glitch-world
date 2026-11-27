@@ -73,7 +73,15 @@ export function draw() {
   const gp = (S / 16) * 1.6;
   for (const o of G.orbs) {
     if (!vis(o.x, o.y)) continue;
-    dS(o.v >= 5 ? SPR.gemB : SPR.gem, X(o.x), Y(o.y) + Math.sin(G.t * 5 + o.x) * 2, gp * (o.v >= 25 ? 1.6 : 1), false, false);
+    // Paliers : 1 = cube cyan, 5+ = magenta plus gros, 25+ = jaune qui « bugue » par à-coups.
+    const big = o.v >= 25, sp = big ? SPR.gemY : o.v >= 5 ? SPR.gemM : SPR.gem;
+    const x = X(o.x), y = Y(o.y) + Math.sin(G.t * 5 + o.x) * 2, k = gp * (big ? 1.45 : o.v >= 5 ? 1.2 : 1);
+    if (big && (G.t * 3 + o.x) % 1 < 0.12) {
+      // Glitch : décalage RGB bref, deux fantômes cyan et magenta de part et d'autre.
+      const j = k * 3;
+      ctx.globalAlpha = 0.55; dS(SPR.gem, x - j, y, k, false, false); dS(SPR.gemM, x + j, y, k, false, false); ctx.globalAlpha = 1;
+      dS(sp, x + (Math.random() < 0.5 ? -1 : 1) * k, y, k, false, false);
+    } else dS(sp, x, y, k, false, false);
   }
   for (const c of G.chests) { shadow(X(c.x), Y(c.y), 0.4 * S); dS(SPR.chest, X(c.x), Y(c.y), (S / 16) * 1.4, false, false) }
 

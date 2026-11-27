@@ -1,6 +1,6 @@
 /* Pixel art en texte : chaque caractère = une couleur de PAL, '.' = transparent. */
 const PAL: Record<string, string> = {
-  k: '#1a1022', e: '#1a1022', s: '#e8b48a', S: '#c48a62', h: '#5a3a22', c: '#29f0ff', p: '#ff2e88', P: '#c41f66', n: '#2c2c54', w: '#f4ecff',
+  k: '#1a1022', e: '#1a1022', s: '#e8b48a', S: '#c48a62', h: '#5a3a22', c: '#29f0ff', C: '#1488a8', p: '#ff2e88', P: '#c41f66', n: '#2c2c54', w: '#f4ecff',
   g: '#9a96b0', G: '#6b6780', N: '#3b3550', o: '#ff8a1f', O: '#c25f00', b: '#c88a4a', B: '#8a5a2a', r: '#d0344f', R: '#8a1f33', m: '#2a2140',
   d: '#22222e', D: '#3a3a52', y: '#ffe14d', Y: '#c27a00', v: '#a23cf0', V: '#6e1fb0', K: '#0b0712', a: '#7d8296', A: '#d6dae6', t: '#b88a64', T: '#8f6446',
 };
@@ -16,8 +16,10 @@ const MAPS: Record<string, string[]> = {
   fetard: ['.....ky.....', '....kyyk....', '...kyyyyk...', '..kssssssk.k', '..ksesseskks', '..kswwwwskvk', '...kSSSSkkvk', '..kvvvvvvvvk', '.ksvvvvvvvk.', '.ksVvvvvvVk.', '..kvvvvvvk..', '..kNNNNNNk..', '..kNNkkNNk..', '..kkk..kkk..'],
   boss: ['....kkkkkkkk....', '...khhhhhhhhk...', '..kcccccccccck..', '.kccksssssskcck.', '.kcckkkkkkkkcck.', '.kcckswwwwskcck.', '..kkkkSSSSkkkk..', '.kppppppppppppk.', 'ksppppppppppppsk', 'kkkkkkkkkkkkkkkk', 'kmmmmmmmmmmmmmmk', 'kmKKKmmccmmKKKmk', 'kmKyKmmppmmKyKmk', 'kmKKKmmccmmKKKmk', 'kmmmmmmmmmmmmmmk', 'kkkkkkkkkkkkkkkk'],
   chest: ['.kkkkkkkk.', 'kyyyyyyyyk', 'kYYYYYYYYk', 'kkkkwwkkkk', 'kyyykkyyyk', 'kyyyyyyyyk', 'kYYYYYYYYk', '.kkkkkkkk.'],
-  gem: ['..k..', '.kck.', 'kcwck', '.kck.', '..k..'],
-  gemB: ['..k..', '.kyk.', 'kywyk', '.kyk.', '..k..'],
+  // XP : cubes de pixel (face claire en haut à gauche, face sombre en bas à droite), jamais en croix.
+  gem: ['.kkkkk', 'kwwwck', 'kwccCk', 'kwccCk', 'kcCCCk', 'kkkkk.'],
+  gemM: ['.kkkkk', 'kwwwpk', 'kwppPk', 'kwppPk', 'kpPPPk', 'kkkkk.'],
+  gemY: ['.kkkkk', 'kwwwyk', 'kwyyYk', 'kwyyYk', 'kyYYYk', 'kkkkk.'],
 };
 
 function mk(rows: string[], col?: string): HTMLCanvasElement {
