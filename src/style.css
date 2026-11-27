@@ -27,8 +27,8 @@ img.px{image-rendering:pixelated}
 #bb{position:fixed;left:50%;transform:translateX(-50%);top:96px;width:min(520px,86vw);text-align:center;pointer-events:none;font:700 14px Silkscreen,monospace;color:var(--mag);text-shadow:0 2px 0 #000}
 #bb .bar{height:14px;border:3px solid #000;background:#0b0712;margin-top:3px}#bb i{display:block;height:100%;background:var(--mag)}
 .hide{display:none!important}
-#ov{position:fixed;inset:0;display:grid;place-items:center;background:#0b0712e6;padding:16px;overflow:auto}
-.panel{width:min(980px,100%);text-align:center}
+#ov{position:fixed;inset:0;display:flex;background:#0b0712e6;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));overflow:auto;-webkit-overflow-scrolling:touch}
+.panel{width:min(980px,100%);margin:auto;text-align:center}
 .panel h2{font:700 clamp(30px,7vw,52px)/1.05 Silkscreen,monospace;margin:0 0 6px;text-shadow:-3px 0 var(--mag),3px 0 var(--cy)}
 .panel>p{margin:0 auto 14px;max-width:62ch;opacity:.9}
 #cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:8px 0 14px;text-align:left}
@@ -56,4 +56,32 @@ img.px{image-rendering:pixelated}
 .fiche img{width:140px;height:140px;object-fit:contain;background:#0b0712;border-radius:8px;padding:10px}
 .fiche h3{margin:0;font:700 20px Silkscreen,monospace}.fiche dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:20px}.fiche dt{opacity:.6}.fiche dd{margin:0}
 @media(max-width:600px){#cards{grid-template-columns:1fr}.roster{gap:8px}.hero{padding:8px 2px}.hero img{width:48px;height:48px}.hero span{font-size:13px}.fiche{grid-template-columns:64px 1fr;padding:12px}.fiche img{width:64px;height:64px;padding:4px}.fiche dl{font-size:18px}#hf{display:none}.slots{max-width:150px}}
+/* Téléphone (portrait ou paysage) : cartes et fiches compactes. */
+@media(max-width:600px),(max-height:500px){
+ body{font-size:19px}
+ .panel h2{font-size:clamp(26px,8vw,38px);margin-bottom:4px}
+ .panel>p{margin-bottom:8px;font-size:18px}
+ #cards{gap:8px;margin:4px 0 8px}
+ .card{grid-template-columns:44px 1fr;gap:8px;padding:22px 10px 10px}
+ .ic{width:44px;height:44px}.ic svg{width:30px;height:30px}
+ .tag{font-size:15px}.card strong{font-size:13px}.lv{font-size:11px}.ds{font-size:18px;line-height:1.1}
+ .btn{min-height:44px;padding:0 16px;font-size:13px}
+ .note{font-size:15px;margin-top:6px}
+ .build{font-size:17px}
+}
+/* Paysage téléphone : 340 px de haut, on étale en largeur. */
+@media(max-height:500px) and (orientation:landscape){
+ #cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .card .tag{display:none}
+ #cards.menu{grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}
+ .menu .roster{grid-column:1;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;gap:8px}
+ .menu .hero{padding:6px 2px}.menu .hero img{width:40px;height:40px}.menu .hero span{font-size:13px}
+ .menu .fiche{grid-column:2;grid-template-columns:72px 1fr;padding:10px;margin:0}
+ .menu .fiche img{width:72px;height:72px;padding:4px}.menu .fiche dl{font-size:16px}.menu .fiche h3{font-size:15px}
+ .panel>p.note{display:none}
+ .panel h2{font-size:26px;margin:0}
+ .panel>p{font-size:16px;margin-bottom:6px}
+ .menu .fiche dl{font-size:14px;line-height:1.05}
+ #ov .btn{min-height:40px;margin:2px 4px}
+}
 @media(prefers-reduced-motion:reduce){.card{transition:none}}

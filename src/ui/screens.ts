@@ -20,13 +20,14 @@ function overlay(t: string, s: string, btns: Btn[], note = '') {
   }
   $('ov').classList.remove('hide');
 }
-export const hideOv = () => { $('ov').classList.add('hide'); $('cards').innerHTML = '' };
+export const hideOv = () => { $('ov').classList.add('hide'); $('cards').innerHTML = ''; $('cards').classList.remove('menu') };
 const resume = () => { hideOv(); G.state = 'play' };
 
 export function showCards(list: Card[], t: string, s: string, reroll: boolean) {
   G.state = 'cards';
   const box = $('cards');
   box.innerHTML = '';
+  box.classList.remove('menu');
   list.forEach((c, ix) => {
     const r = c.r >= 0 ? RAR[c.r] : null, b = document.createElement('button');
     b.className = 'card';
@@ -62,6 +63,7 @@ export function pause() {
   if (!G || G.state !== 'play') return;
   G.state = 'pause';
   $('cards').innerHTML = '';
+  $('cards').classList.remove('menu');
   $('cards').append(buildList());
   overlay('Pause', `${mmss(G.t)} · niveau ${G.lvl} · ${G.kills} ennemis tués`, [
     ['Reprendre', resume, true],
@@ -82,6 +84,7 @@ export function endRun(win: boolean) {
   G.state = 'end';
   const lv = G.lvTimes.map(mmss).join(', ');
   $('cards').innerHTML = '';
+  $('cards').classList.remove('menu');
   $('cards').append(buildList());
   const btns: Btn[] = [['Rejouer', start, true], ['Écran titre', menu]];
   if (win) btns.splice(1, 0, ['Continuer en endless', () => { resume(); G.bossDone = true; G.boss = null }]);
@@ -95,6 +98,7 @@ export function menu() {
   $('hud').classList.add('hide'); $('bb').classList.add('hide');
   const box = $('cards');
   box.innerHTML = '';
+  box.classList.add('menu');
   const img = (h: (typeof HEROES)[number]) => (h.on ? h.portrait ?? SPR[h.sprite].c.toDataURL() : sil(h.sprite));
   const roster = document.createElement('div');
   roster.className = 'roster';
