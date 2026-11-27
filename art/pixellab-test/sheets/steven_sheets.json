@@ -1,0 +1,98 @@
+{
+ "idle": {
+  "sheet": "sheets/steven_idle.png",
+  "cell": 64,
+  "rows": [
+   "south",
+   "south-east",
+   "east",
+   "north-east",
+   "north",
+   "north-west",
+   "west",
+   "south-west"
+  ],
+  "frames": {
+   "south": 4,
+   "south-east": 4,
+   "east": 4,
+   "north-east": 4,
+   "north": 4,
+   "north-west": 4,
+   "west": 4,
+   "south-west": 4
+  }
+ },
+ "slam": {
+  "sheet": "sheets/steven_slam.png",
+  "cell": 92,
+  "rows": [
+   "south",
+   "east",
+   "north",
+   "west"
+  ],
+  "frames": {
+   "south": 9,
+   "east": 9,
+   "north": 9,
+   "west": 9
+  }
+ },
+ "hammer": {
+  "sheet": "sheets/steven_hammer.png",
+  "cell": 92,
+  "rows": [
+   "south",
+   "east",
+   "north",
+   "west"
+  ],
+  "frames": {
+   "south": 9,
+   "east": 9,
+   "north": 9,
+   "west": 9
+  }
+ },
+ "walk": {
+  "sheet": "sheets/steven_walk.png",
+  "cell": 64,
+  "rows": [
+   "south",
+   "south-east",
+   "east",
+   "north-east",
+   "north",
+   "north-west",
+   "west",
+   "south-west"
+  ],
+  "frames": {
+   "south": 8,
+   "south-east": 8,
+   "east": 8,
+   "north-east": 8,
+   "north": 8,
+   "north-west": 8,
+   "west": 8,
+   "south-west": 8
+  }
+ },
+ "slam2": {
+  "sheet": "sheets/steven_slam2.png",
+  "cell": 92,
+  "rows": [
+   "south",
+   "east",
+   "north",
+   "west"
+  ],
+  "frames": {
+   "south": 9,
+   "east": 9,
+   "north": 9,
+   "west": 9
+  }
+ }
+}

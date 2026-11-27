@@ -1,0 +1,20 @@
+{
+ "normal": {
+  "cell": 48,
+  "rows": 8,
+  "frames": 8,
+  "base": 42
+ },
+ "rescape": {
+  "cell": 48,
+  "rows": 8,
+  "frames": 8,
+  "base": 42
+ },
+ "casquette": {
+  "cell": 48,
+  "rows": 8,
+  "frames": 8,
+  "base": 42
+ }
+}

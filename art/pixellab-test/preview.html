@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>GlitchWorld · Steven « Go Muscu » · test PixelLab</title>
+<style>
+  :root { --bg:#120d1c; --mag:#ff2e88; --cyan:#29f0ff; --yel:#ffe14d; --txt:#e8e0f0; --dim:#8a7fa0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:14px/1.4 ui-monospace, Menlo, Consolas, monospace; padding:24px; }
+  h1 { color:var(--mag); margin:0 0 4px; font-size:22px; text-shadow:0 0 8px var(--mag); }
+  h2 { color:var(--cyan); font-size:16px; margin:28px 0 8px; text-shadow:0 0 6px rgba(41,240,255,.5); }
+  .sub { color:var(--dim); margin-bottom:12px; }
+  .row { display:flex; flex-wrap:wrap; gap:12px; }
+  figure { margin:0; text-align:center; background:rgba(255,255,255,.03); border:1px solid rgba(255,46,136,.25); border-radius:6px; padding:6px; }
+  figcaption { color:var(--dim); font-size:11px; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display:block; }
+  .ctrl { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin:8px 0; color:var(--dim); }
+  .ctrl b { color:var(--yel); }
+  #play { border:1px solid var(--cyan); border-radius:6px; background:#0d0915; width:960px; height:540px; max-width:100%; }
+  .tag { color:var(--yel); }
+</style>
+</head>
+<body>
+<h1>Steven « Go Muscu »</h1>
+<div class="sub">Test PixelLab (v3 64 px, vue « low top-down », 8 directions). Rendu agrandi en pixelated sur fond #120d1c.</div>
+
+<div class="ctrl">
+  <label>Zoom <input id="zoom" type="range" min="1" max="6" value="3"> <b id="zoomv">×3</b></label>
+  <label>FPS marche <input id="fpsWalk" type="number" min="1" max="30" value="10" style="width:48px"></label>
+  <label>FPS idle <input id="fpsIdle" type="number" min="1" max="30" value="5" style="width:48px"></label>
+  <label>FPS attaques <input id="fpsAtk" type="number" min="1" max="30" value="12" style="width:48px"></label>
+</div>
+
+<h2>Bac à sable jouable</h2>
+<div class="sub">Affiché ×2 (sprite à l’échelle 1 dans un canvas 480×270). Flèches / ZQSD / WASD pour marcher (8 directions), <span class="tag">Espace</span> = coup de marteau (haltère à deux mains), <span class="tag">X</span> = slam v2. Hors mouvement : idle.</div>
+<canvas id="play" width="480" height="270"></canvas>
+
+<div id="sections"></div>
+
+<script>
+const MANIFEST = {"idle": {"sheet": "sheets/steven_idle.png", "cell": 64, "rows": ["south", "south-east", "east", "north-east", "north", "north-west", "west", "south-west"], "frames": {"south": 4, "south-east": 4, "east": 4, "north-east": 4, "north": 4, "north-west": 4, "west": 4, "south-west": 4}}, "slam": {"sheet": "sheets/steven_slam.png", "cell": 92, "rows": ["south", "east", "north", "west"], "frames": {"south": 9, "east": 9, "north": 9, "west": 9}}, "hammer": {"sheet": "sheets/steven_hammer.png", "cell": 92, "rows": ["south", "east", "north", "west"], "frames": {"south": 9, "east": 9, "north": 9, "west": 9}}, "walk": {"sheet": "sheets/steven_walk.png", "cell": 64, "rows": ["south", "south-east", "east", "north-east", "north", "north-west", "west", "south-west"], "frames": {"south": 8, "south-east": 8, "east": 8, "north-east": 8, "north": 8, "north-west": 8, "west": 8, "south-west": 8}}, "slam2": {"sheet": "sheets/steven_slam2.png", "cell": 92, "rows": ["south", "east", "north", "west"], "frames": {"south": 9, "east": 9, "north": 9, "west": 9}}};
+const LABELS = { walk:'Marche (template walking-8-frames)', idle:'Idle respiration (template breathing-idle)',
+  hammer:'Attaque « marteau » : haltère à deux mains frappé au sol (pixminimax) — RETENUE',
+  slam2:'Slam v2 : barre au-dessus de la tête puis au sol (pixminimax)', slam:'Slam v1 (v3, ressemble à un soulevé de terre)' };
+const ORDER = ['walk','idle','hammer','slam2','slam'];
+const fpsOf = a => +document.getElementById(a==='walk'?'fpsWalk':a==='idle'?'fpsIdle':'fpsAtk').value || 8;
+const imgs = {};
+let zoom = 3;
+const views = []; // {canvas, anim, dir}
+
+function load(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; }); }
+
+async function main(){
+  for (const a of Object.keys(MANIFEST)) imgs[a] = await load(MANIFEST[a].sheet);
+  const rot = [];
+  const dirs = ['south','south-east','east','north-east','north','north-west','west','south-west'];
+  for (const d of dirs) rot.push([d, await load('raw/rotations/steven_rot_' + d.replace('-','') + '.png')]);
+  const root = document.getElementById('sections');
+  // Rotations
+  root.insertAdjacentHTML('beforeend', '<h2>Rotations (8 directions, 64×64)</h2><div class="row" id="rot"></div>');
+  for (const [d, im] of rot) {
+    const f = document.createElement('figure'); const c = document.createElement('canvas');
+    c.dataset.w = 64; f.appendChild(c); f.insertAdjacentHTML('beforeend', `<figcaption>${d}</figcaption>`);
+    document.getElementById('rot').appendChild(f); views.push({ canvas:c, still:im });
+  }
+  for (const a of ORDER.filter(a => MANIFEST[a])) {
+    const m = MANIFEST[a];
+    root.insertAdjacentHTML('beforeend', `<h2>${LABELS[a]||a}</h2><div class="sub">${m.rows.length} directions · ${Math.max(...Object.values(m.frames))} frames · cellule ${m.cell}×${m.cell} · <a style="color:var(--cyan)" href="${m.sheet}">${m.sheet}</a></div><div class="row" id="r_${a}"></div>`);
+    m.rows.forEach((d, r) => {
+      const f = document.createElement('figure'); const c = document.createElement('canvas');
+      c.dataset.w = m.cell; f.appendChild(c); f.insertAdjacentHTML('beforeend', `<figcaption>${d} · ${m.frames[d]} fr.</figcaption>`);
+      document.getElementById('r_' + a).appendChild(f); views.push({ canvas:c, anim:a, row:r, dir:d });
+    });
+  }
+  resize(); requestAnimationFrame(loop);
+}
+
+function resize(){
+  for (const v of views) { const w = +v.canvas.dataset.w; v.canvas.width = v.canvas.height = w * zoom; }
+}
+document.getElementById('zoom').oninput = e => { zoom = +e.target.value; document.getElementById('zoomv').textContent = '×' + zoom; resize(); };
+
+function drawCell(ctx, a, row, frame, dx, dy, scale){
+  const m = MANIFEST[a], s = m.cell;
+  ctx.drawImage(imgs[a], frame * s, row * s, s, s, dx, dy, s * scale, s * scale);
+}
+
+// ---- Bac à sable ----
+const play = document.getElementById('play'), pctx = play.getContext('2d');
+const keys = new Set();
+addEventListener('keydown', e => { keys.add(e.key.toLowerCase()); if ([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase())) e.preventDefault(); });
+addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+const P = { x:240, y:150, dir:'south', anim:'idle', t0:0, atk:null };
+const DIR8 = { '0,1':'south','1,1':'south-east','1,0':'east','1,-1':'north-east','0,-1':'north','-1,-1':'north-west','-1,0':'west','-1,1':'south-west' };
+// Attaques générées sur 4 directions seulement : on ramène la diagonale vers la plus proche
+const to4 = d => ({ 'south-east':'east','south-west':'west','north-east':'east','north-west':'west' }[d] || d);
+
+function updatePlayer(now, dt){
+  if (P.atk) {
+    const m = MANIFEST[P.atk], n = m.frames[to4(P.dir)];
+    if ((now - P.t0) / 1000 * fpsOf(P.atk) >= n) P.atk = null; else return;
+  }
+  if (keys.has(' ') && MANIFEST.hammer) { P.atk = 'hammer'; P.t0 = now; return; }
+  if (keys.has('x') && MANIFEST.slam2) { P.atk = 'slam2'; P.t0 = now; return; }
+  let dx = 0, dy = 0;
+  if (keys.has('arrowleft') || keys.has('q') || keys.has('a')) dx -= 1;
+  if (keys.has('arrowright') || keys.has('d')) dx += 1;
+  if (keys.has('arrowup') || keys.has('z') || keys.has('w')) dy -= 1;
+  if (keys.has('arrowdown') || keys.has('s')) dy += 1;
+  const moving = dx || dy;
+  if (moving) {
+    P.dir = DIR8[dx + ',' + dy];
+    const k = (dx && dy) ? Math.SQRT1_2 : 1, sp = 60;
+    P.x = Math.max(16, Math.min(play.width - 16, P.x + dx * k * sp * dt));
+    P.y = Math.max(24, Math.min(play.height - 4, P.y + dy * k * sp * dt));
+  }
+  const want = moving ? 'walk' : 'idle';
+  if (want !== P.anim) { P.anim = want; P.t0 = now; }
+}
+
+function drawPlay(now){
+  pctx.imageSmoothingEnabled = false;
+  pctx.fillStyle = '#120d1c'; pctx.fillRect(0, 0, play.width, play.height);
+  pctx.strokeStyle = 'rgba(255,46,136,.12)';
+  for (let x = 0; x < play.width; x += 32) { pctx.beginPath(); pctx.moveTo(x + .5, 0); pctx.lineTo(x + .5, play.height); pctx.stroke(); }
+  for (let y = 0; y < play.height; y += 32) { pctx.beginPath(); pctx.moveTo(0, y + .5); pctx.lineTo(play.width, y + .5); pctx.stroke(); }
+  const a = P.atk || P.anim, m = MANIFEST[a];
+  const d = P.atk ? to4(P.dir) : P.dir, row = m.rows.indexOf(d);
+  const n = m.frames[d], f = Math.floor((now - P.t0) / 1000 * fpsOf(a)) % n;
+  // ombre
+  pctx.fillStyle = 'rgba(0,0,0,.45)'; pctx.beginPath(); pctx.ellipse(P.x, P.y - 2, 12, 4, 0, 0, Math.PI * 2); pctx.fill();
+  // échelle 1 : sprite 64 px, pieds ~ au bas de la cellule (marge ~ (cell-64)/2 pour les attaques)
+  const s = m.cell; drawCell(pctx, a, row, f, Math.round(P.x - s / 2), Math.round(P.y - s / 2 - 28 + 0), 1);
+}
+
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  for (const v of views) {
+    const ctx = v.canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, v.canvas.width, v.canvas.height);
+    if (v.still) { ctx.drawImage(v.still, 0, 0, 64 * zoom, 64 * zoom); continue; }
+    const n = MANIFEST[v.anim].frames[v.dir];
+    drawCell(ctx, v.anim, v.row, Math.floor(now / 1000 * fpsOf(v.anim)) % n, 0, 0, zoom);
+  }
+  updatePlayer(now, dt); drawPlay(now);
+  requestAnimationFrame(loop);
+}
+main();
+</script>
+</body>
+</html>

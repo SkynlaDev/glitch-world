@@ -1,0 +1,7 @@
+node_modules
+dist
+__pycache__/
+*.pyc
+# Session MCP PixelLab (identifiant de session, jamais versionné)
+.session
+.claude/settings.local.json

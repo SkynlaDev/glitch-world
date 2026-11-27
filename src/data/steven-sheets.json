@@ -1,0 +1,20 @@
+{
+ "walk": {
+  "cell": 48,
+  "rows": 8,
+  "frames": 8,
+  "base": 45
+ },
+ "idle": {
+  "cell": 48,
+  "rows": 8,
+  "frames": 4,
+  "base": 45
+ },
+ "hammer": {
+  "cell": 68,
+  "rows": 4,
+  "frames": 9,
+  "base": 56
+ }
+}
