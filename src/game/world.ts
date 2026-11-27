@@ -97,7 +97,7 @@ export function takeFrag(id: FragId) {
   if (i >= 0) G.slots[i] = id; else G.bag.push(id);
   G.dirty = 1;
   hooks.sfx('frag');
-  G.banner = { t: 2.5, txt: i >= 0 ? `Fragment de code : ${FRAG[id].n}` : `${FRAG[id].n} en réserve · va voir le hacker` };
+  G.banner = { t: 2.5, txt: i >= 0 ? `Fragment de code : ${FRAG[id].n}` : `${FRAG[id].n} en réserve · va voir Hackintosh` };
 }
 export function addXP(v: number) {
   G.xp += v * (1 + 0.05 * bv('manuel'));

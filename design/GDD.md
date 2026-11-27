@@ -76,4 +76,4 @@ La chaîne se lit de gauche à droite ; chaque fragment agit sur ce qui sort du 
 | Boucle | `loop(2)` | Le fragment suivant agit deux fois |
 
 - **Obtention** : un zombie porteur (halo magenta, puce `</>` au-dessus de la tête, PV ×2) apparaît à 0:30 puis toutes les 40–60 s (2 max en même temps) et lâche un fragment. Ramassé, il va dans le premier emplacement ouvert libre, sinon en réserve.
-- **Réarrangement** : seulement chez le **hacker**, qui apparaît à 1:30 puis toutes les 2 min, à 7 u, et reste 40 s (le temps ne s'écoule que hors de sa zone). Rester 3 s dans sa zone (rayon 1,6 u) remplit la jauge et ouvre l'atelier, en pause. Toucher un fragment puis un emplacement pour les échanger.
+- **Réarrangement** : seulement chez **Hackintosh**, le hacker (chibi PixelLab : mulet blond, lunettes rondes, veste marron, tee-shirt blanc, gant électronique ; clin d'œil aux hackers des années 80), qui apparaît à 1:30 puis toutes les 2 min, à 7 u, et reste 40 s (le temps ne s'écoule que hors de sa zone). Rester 3 s dans sa zone (rayon 1,6 u) remplit la jauge et ouvre l'atelier, en pause. Toucher un fragment puis un emplacement pour les échanger.

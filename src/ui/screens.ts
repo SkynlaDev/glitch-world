@@ -131,7 +131,7 @@ export function showHack() {
   for (const l of describeChain(G.slots)) { const li = document.createElement('li'); li.textContent = l; res.append(li) }
   wrap.append(info, res);
   box.append(wrap);
-  overlay('Hacker', 'Réarrange tes fragments de code.', [['Terminer', () => { sel = null; resume() }, true]]);
+  overlay('Hackintosh', 'Réarrange tes fragments de code.', [['Terminer', () => { sel = null; resume() }, true]]);
 }
 
 export function togglePause() { if (G?.state === 'pause') resume(); else pause() }

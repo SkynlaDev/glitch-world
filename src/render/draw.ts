@@ -3,6 +3,7 @@ import { FRAG, HACKER } from '../data/fragments';
 import { input } from '../game/input';
 import { G, settings, type Enemy } from '../game/state';
 import { SPR, type Sprite } from './sprites';
+import { drawHackintosh, hackintoshReady } from './hackintosh';
 import { drawSteven, stevenReady } from './steven';
 import { drawZombie } from './zombies';
 import { ctx, pat, view } from './view';
@@ -93,7 +94,7 @@ export function draw() {
     const hop = f.t < 0.4 ? Math.sin((f.t / 0.4) * Math.PI) * 0.5 * S : 0;
     drawChip(X(f.x), Y(f.y) - 0.35 * S + Math.sin(G.t * 4) * 3 - hop, 0.5 * S, FRAG[f.id].col);
   }
-  // Hacker : zone au sol, jauge qui se remplit quand on y reste, et flèche au bord de l'écran s'il est hors champ.
+  // Hackintosh (le hacker) : zone au sol, jauge qui se remplit quand on y reste, et flèche au bord de l'écran s'il est hors champ.
   const hk = G.hacker;
   if (hk) {
     const hx = X(hk.x), hy = Y(hk.y), rr = HACKER.radius * S;
@@ -105,8 +106,17 @@ export function draw() {
     }
     shadow(hx, hy, 0.45 * S);
     const blink = hk.life < 8 && Math.floor(G.t * 6) % 2;
-    if (!blink) dS(SPR.hacker, hx, hy, S * 0.07, hk.x > p.x, false);
-    if (!vis(hk.x, hk.y, -1)) edgeArrow(hx, hy, 'HACKER');
+    if (!blink) {
+      if (hackintoshReady()) drawHackintosh(hx, hy, p.x - hk.x, p.y - hk.y);
+      else dS(SPR.hacker, hx, hy, S * 0.07, hk.x > p.x, false);
+    }
+    // Sa réplique quand on entre dans la zone.
+    if (hyp(p.x - hk.x, p.y - hk.y) < HACKER.radius) {
+      ctx.save(); ctx.font = `700 ${Math.max(11, S * 0.3)}px ${FONT_T}`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#000a'; ctx.fillText('Je vais hacker le temps…', hx + 1, hy - 1.9 * S + 1);
+      ctx.fillStyle = '#29f0ff'; ctx.fillText('Je vais hacker le temps…', hx, hy - 1.9 * S); ctx.restore();
+    }
+    if (!vis(hk.x, hk.y, -1)) edgeArrow(hx, hy, 'HACKINTOSH');
   }
 
   // Tri en profondeur : ennemis visibles + joueur.

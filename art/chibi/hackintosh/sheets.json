@@ -1,0 +1,16 @@
+{
+ "rotations": {
+  "cell": 48,
+  "rows": [
+   "south",
+   "south-east",
+   "east",
+   "north-east",
+   "north",
+   "north-west",
+   "west",
+   "south-west"
+  ],
+  "frames": 1
+ }
+}

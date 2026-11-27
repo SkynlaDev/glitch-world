@@ -36,7 +36,7 @@ function director() {
     G.nextHacker = G.t + HACKER.every;
     const a = R() * TAU;
     G.hacker = { x: G.p.x + Math.cos(a) * HACKER.dist, y: G.p.y + Math.sin(a) * HACKER.dist, life: HACKER.life, fill: 0 };
-    G.banner = { t: 3, txt: 'Le hacker est là · reste dans sa zone' };
+    G.banner = { t: 3, txt: 'Hackintosh est là · reste dans sa zone' };
   }
   const ev = { livreur: Math.max(2.2, 6 - 0.3 * m), casseur: Math.max(3, 8 - 0.4 * m), videur: Math.max(8, 22 - m), fetard: Math.max(4, 10 - 0.5 * m) };
   for (const t of Object.keys(ev) as (keyof typeof ev)[]) {
