@@ -16,7 +16,8 @@ export interface Projectile { x: number; y: number; vx: number; vy: number; life
 export interface EnemyShot { x: number; y: number; vx: number; vy: number; life: number }
 export interface Fx { k: 'ring' | 'arc' | 'boom' | 'pop'; x: number; y: number; c: string; r: number; dir: number; t: number }
 export interface DmgNum { x: number; y: number; v: number; t: number }
-export interface Orb { x: number; y: number; v: number; mag: number }
+/** t = âge (s) ; vx, vy = petit saut à l'apparition, avant que l'aimant puisse l'attirer. */
+export interface Orb { x: number; y: number; v: number; mag: number; t: number; vx: number; vy: number }
 export interface Puddle { x: number; y: number; life: number }
 export interface Chest { x: number; y: number; got?: boolean }
 export interface Meteor { x: number; y: number; t: number; z: number; dm: number }

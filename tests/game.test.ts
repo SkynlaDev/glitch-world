@@ -3,7 +3,7 @@ import { BOSSD, HAMMER, MODE, ZOMBIE_VARIANTS, need } from '../src/data/game-dat
 import { bCard, chestCards, makeCards, rollR } from '../src/game/cards';
 import { G, hooks, newGame, wDelay, wDmg, wZone } from '../src/game/state';
 import { dirIndex, update } from '../src/game/update';
-import { addXP, spawn } from '../src/game/world';
+import { addXP, hit, spawn } from '../src/game/world';
 
 let ended: boolean | null, offered: number;
 beforeEach(() => {
@@ -75,6 +75,19 @@ describe('simulation', () => {
     addXP(6 + 12);
     expect(G.lvl).toBe(3);
     expect(G.pendingLv).toBe(2);
+  });
+  it('chaque ennemi tué lâche un cube, visible un instant avant d’être aspiré', () => {
+    const { x, y } = G.p;
+    const es = Array.from({ length: 12 }, (_, i) => spawn('zombie', false, x + 0.5 + (i % 4) * 0.3, y + Math.floor(i / 4) * 0.3));
+    for (const e of es) hit(e, 1e6);
+    expect(G.kills).toBe(12);
+    expect(G.orbs.length).toBe(12);
+    const xp0 = G.xp, lv0 = G.lvl;
+    for (let i = 0; i < 12; i++) update(1 / 60); // 0,2 s : encore en train de sauter
+    expect(G.orbs.length).toBe(12);
+    for (let i = 0; i < 120; i++) update(1 / 60);
+    expect(G.orbs.filter((o) => o.t < 1).length).toBe(0); // tous les cubes lâchés ont été ramassés
+    expect(G.lvl > lv0 || G.xp > xp0).toBe(true);
   });
   it('une minute de jeu tourne sans erreur et tue des ennemis', () => {
     for (let i = 0; i < 60 * 60 && G.state === 'play'; i++) update(1 / 60);

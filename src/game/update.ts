@@ -63,6 +63,9 @@ function bossAI(b: Enemy, dt: number, dist: number): number {
 }
 
 /** Vecteur écran (y vers le bas) → direction 0–7 : S, SE, E, NE, N, NW, W, SW. */
+/** Temps (s) pendant lequel un cube tout juste lâché reste visible avant de pouvoir être aspiré. */
+const ORB_SETTLE = 0.35;
+
 export function dirIndex(x: number, y: number): number {
   const k = Math.round(Math.atan2(y, x) / (Math.PI / 4));
   return (((2 - k) % 8) + 8) % 8;
@@ -181,6 +184,8 @@ export function update(dt: number) {
 
   const pr = pickR();
   for (const o of G.orbs) {
+    o.t += dt;
+    if (o.t < ORB_SETTLE) { o.x += o.vx * dt; o.y += o.vy * dt; o.vx *= 0.9; o.vy *= 0.9; continue }
     const dx = p.x - o.x, dy = p.y - o.y, d = hyp(dx, dy) || 1;
     if (d < pr) o.mag = 1;
     if (o.mag) { o.x += (dx / d) * 12 * dt; o.y += (dy / d) * 12 * dt }

@@ -72,14 +72,16 @@ export function kill(e: Enemy) {
 export const fxp = (k: Fx['k'], x: number, y: number, c: string, r = 1, dir = 1) => {
   if (G.fx.length < 90) G.fx.push({ k, x, y, c, r, dir, t: 0 });
 };
-/** Au-delà de 150 orbes, la valeur est fusionnée dans l'orbe le plus proche. */
+/** Au-delà de 300 cubes, la valeur est fusionnée dans le cube le plus proche. */
 export function addOrb(x: number, y: number, v: number) {
-  if (G.orbs.length >= 150) {
+  if (G.orbs.length >= 300) {
     let b = G.orbs[0], bd = 1e9;
     for (const o of G.orbs) { const d = hyp(o.x - x, o.y - y); if (d < bd) { bd = d; b = o } }
     b.v += v; return;
   }
-  G.orbs.push({ x, y, v, mag: 0 });
+  // Chaque ennemi lâche un cube qui saute un peu hors du corps : on le voit tomber avant qu'il soit aspiré.
+  const a = Math.random() * TAU, sp = 1.5 + Math.random();
+  G.orbs.push({ x, y, v, mag: 0, t: 0, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp });
 }
 export function addXP(v: number) {
   G.xp += v * (1 + 0.05 * bv('manuel'));
