@@ -35,7 +35,7 @@ Poids de tirage à la minute m : `[max(30, 60−3m), 25+m, 10+m, 4+0,6m, 1+0,4m]
 
 **Améliorations de l'Haltère Ego** : seulement cadence, puissance, chance de critique (+4 points × multiplicateur, 5 % de base, plafond 60 %), dégâts critiques (+20 % × multiplicateur, ×1,5 de base) et rayon. Aucune répétition (double onde, échos, divisions) : elles viennent uniquement des fragments de code, pour que les glitchs aient un vrai intérêt. Un critique s'affiche en jaune avec « ! ».
 
-PV des zombies : 12 × (1 + 0,2 par minute), soit 36 PV à 10 min. Avec 10 dégâts de base, l'haltère ne tue plus en un coup au départ, sauf sur un critique.
+PV des zombies : 20 × (1 + 0,35 par minute), soit 90 PV à 10 min. La carte de puissance donne +7 % × multiplicateur. Objectif mesuré par simulation (cartes tirées au hasard) : 2 à 2,5 coups pour tuer un zombie jusqu'au niveau 15 environ ; les one-shots viennent des critiques et des fragments (Surcharge), pas des cartes seules.
 
 ## Babioles
 Protéine (+5 % dégâts), Perche à selfie (+5 % zone), Café serré (+4 % cadence), Gourde (+10 PV max), Pansement (0,3 PV/s), Casque de vélo (−4 % dégâts subis, plancher 40 %), Chaussettes antidérapantes (+5 % vitesse), Aimant (+15 % ramassage), Manuel de triche (+5 % XP), Touche F5 (+1 relance). Valeurs × multiplicateur de rareté.
@@ -50,7 +50,7 @@ PV × (1 + 12 % par minute). Élites toutes les 75 s dès 2:00 : PV ×8, taille 
 
 | Ennemi | Arrive à | PV | Vitesse | Dégâts | Comportement |
 | --- | --- | --- | --- | --- | --- |
-| Copié-Collé | 0:00 | 12 | 0,45 | 5 | Nappe de fond, 22 + 15/min (max 190) |
+| Copié-Collé | 0:00 | 20 | 0,45 | 5 | Nappe de fond, 30 + 20/min (max 220) |
 | Livreur Express | 1:00 | 8 | 1,6 | 8 | Convois en ligne droite, meurt au contact |
 | Casseur | 2:00 | 20 | 0,8 | 5 | S'arrête à 6,5 u, lance un pavé (8) toutes les 3 s |
 | Videur Hitbox XXL | 3:00 | 150 | 0,4 | 15 | Hitbox géante visible, insensible au recul, bloque les flèches |

@@ -14,7 +14,7 @@ function director() {
   const m = G.t / 60, bossOn = !!G.boss;
   let nc = 0;
   for (const e of G.en) if (e.type === 'zombie' && !e.boss && !e.dead) nc++;
-  const target = Math.min(190, 22 + 15 * m) * (bossOn ? 0.3 : 1);
+  const target = Math.min(220, 30 + 20 * m) * (bossOn ? 0.3 : 1);
   let k = 0;
   while (nc < target && k++ < 5 && G.en.length < MAX_EN) { spawn('zombie'); nc++ }
   if (!G.bossDone && !bossOn && G.t >= BOSS_TIME) {

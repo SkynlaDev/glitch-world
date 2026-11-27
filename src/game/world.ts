@@ -33,7 +33,7 @@ function pickVariant(): number {
 }
 /** Fait apparaître un ennemi (par défaut sur un cercle de 24 u autour du joueur). PV × (1 + 12 %/min). */
 export function spawn(type: EnemyType, elite = false, x?: number, y?: number): Enemy {
-  const d = ET[type], sc = 1 + (0.2 * G.t) / 60;
+  const d = ET[type], sc = 1 + (0.35 * G.t) / 60;
   if (x === undefined || y === undefined) { const a = R() * TAU; x = G.p.x + Math.cos(a) * 24; y = G.p.y + Math.sin(a) * 24 }
   const hp = d.hp * sc * (elite ? 8 : 1);
   const e: Enemy = { type, d, x, y, hp, max: hp, r: d.r * (elite ? 1.3 : 1), elite, hitT: 9, cd: 1 + R() * 2, kx: 0, ky: 0, id: G.nid++, vx: 0, vy: 0, variant: pickVariant() };

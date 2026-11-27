@@ -46,7 +46,7 @@ export type EnemyType = 'zombie' | 'livreur' | 'casseur' | 'videur' | 'fetard';
 export interface EnemyDef { n: string; hp: number; sp: number; dmg: number; r: number; col: string; hb?: number; noKnock?: 1; sc: number }
 
 export const ET: Record<EnemyType, EnemyDef> = {
-  zombie: { n: 'Zombie', hp: 12, sp: 0.45, dmg: 5, r: 0.42, col: '#7d9a6a', sc: 1 },
+  zombie: { n: 'Zombie', hp: 20, sp: 0.45, dmg: 5, r: 0.42, col: '#7d9a6a', sc: 1 },
   livreur: { n: 'Livreur Express', hp: 8, sp: 1.6, dmg: 8, r: 0.4, col: '#ff8a1f', sc: 1 },
   casseur: { n: 'Casseur', hp: 20, sp: 0.8, dmg: 5, r: 0.42, col: '#d0344f', sc: 1 },
   videur: { n: 'Videur Hitbox XXL', hp: 150, sp: 0.4, dmg: 15, r: 0.7, col: '#22222e', hb: 1.4, noKnock: 1, sc: 1.25 },

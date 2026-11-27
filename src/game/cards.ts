@@ -20,7 +20,7 @@ export function wCard(w: Weapon, r: number): Card {
   const mkc = (tag: string, title: string, desc: string, fn: () => void): Card =>
     ({ ...base, tag, title, desc, apply: () => { fn(); w.lv++; G.dirty = 1 } });
   const over = () => mkc('Arme · débordement', d.n, `Stat au seuil : +${fmt(15 * m)} % de dégâts`, () => (w.over += 0.15 * m));
-  if (k === 'dmg') return mkc('Arme', `${d.n} : dégâts`, `+${fmt(10 * m)} % de dégâts de base`, () => (w.dmg += 0.1 * m));
+  if (k === 'dmg') return mkc('Arme', `${d.n} : dégâts`, `+${fmt(7 * m)} % de dégâts de base`, () => (w.dmg += 0.07 * m));
   if (k === 'spd') return wDelay(w) <= 0.301 * (w.id === 'main' ? 1.25 ** surcharges() : 1) ? over() : mkc('Arme', `${d.n} : cadence`, `+${fmt(6 * m)} % de vitesse d'attaque`, () => (w.spd += 0.06 * m));
   if (k === 'zone') return wZone(w) >= d.cap - 0.01 ? over() : mkc('Arme', `${d.n} : ${d.zl}`, `+${fmt(10 * m)} % de ${d.zl}`, () => (w.zone += 0.1 * m));
   if (k === 'crit') return wCrit(w) >= CRIT.cap - 0.001 ? over() : mkc('Arme', `${d.n} : critique`, `+${fmt(4 * m)} points de chance de coup critique`, () => (w.crit += 0.04 * m));
