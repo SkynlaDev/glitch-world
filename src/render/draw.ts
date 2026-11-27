@@ -27,7 +27,7 @@ export function drawMenuBg(now: number) {
 }
 
 export function draw() {
-  const { W, H, S } = view, p = G.p, sh = G.shake > 0 ? (R() - 0.5) * 6 : 0;
+  const { W, H, S } = view, p = G.p, sh = G.shake > 0 ? (R() - 0.5) * 2 * G.shakeAmp : 0;
   const ox = W / 2 - p.x * S + sh, oy = H / 2 - p.y * S + sh, X = (x: number) => ox + x * S, Y = (y: number) => oy + y * S;
   const vis = (x: number, y: number, m = 2) => Math.abs(x - p.x) * S < W / 2 + m * S && Math.abs(y - p.y) * S < H / 2 + m * S;
 
@@ -41,6 +41,25 @@ export function draw() {
     ctx.fillStyle = `rgba(255,225,77,${Math.min(0.6, u.life * 0.3)})`;
     ctx.fillRect(X(u.x) - 0.3 * S, Y(u.y) - 0.1 * S, 0.12 * S, 0.12 * S);
     ctx.fillRect(X(u.x) + 0.2 * S, Y(u.y) + 0.1 * S, 0.12 * S, 0.12 * S);
+  }
+  // Fissures laissées par l'haltère : rayons brisés qui s'effacent en 1,2 s.
+  for (const d of G.decals) {
+    const a = Math.max(0, 1 - d.t / 1.2);
+    let sd = d.seed * 9301 + 49297;
+    const rnd = () => ((sd = (sd * 9301 + 49297) % 233280) / 233280);
+    ctx.lineCap = 'square';
+    for (let i = 0; i < 7; i++) {
+      let ang = (i / 7) * TAU + rnd() * 0.6, x = X(d.x), y = Y(d.y);
+      const len = d.r * S * (0.35 + rnd() * 0.35), steps = 3;
+      ctx.beginPath(); ctx.moveTo(x, y);
+      for (let k = 0; k < steps; k++) {
+        ang += (rnd() - 0.5) * 0.7;
+        x += Math.cos(ang) * len / steps; y += Math.sin(ang) * len / steps * 0.6;
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(11,7,18,${0.85 * a})`; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = `rgba(41,240,255,${0.25 * a})`; ctx.lineWidth = 1; ctx.stroke();
+    }
   }
   // Cibles des météorites.
   for (const m of G.met) {

@@ -2,7 +2,8 @@ import '@fontsource/silkscreen/400.css';
 import '@fontsource/silkscreen/700.css';
 import '@fontsource/vt323/400.css';
 import './style.css';
-import { G } from './game/state';
+import { play, unlock } from './audio/sfx';
+import { G, hooks } from './game/state';
 import { update } from './game/update';
 import { draw, drawMenuBg } from './render/draw';
 import { bindControls } from './ui/controls';
@@ -12,6 +13,9 @@ import { menu, start } from './ui/screens';
 
 bindControls();
 bindGamepad();
+hooks.sfx = play;
+// Le navigateur n'autorise le son qu'après une action du joueur.
+for (const ev of ['pointerdown', 'keydown'] as const) addEventListener(ev, unlock);
 
 let last = performance.now(), hudT = 0, fps = 60;
 function frame(now: number) {

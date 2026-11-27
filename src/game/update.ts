@@ -70,6 +70,8 @@ export function dirIndex(x: number, y: number): number {
 
 export function update(dt: number) {
   const p = G.p;
+  // Micro-gel après un très gros coup : tout s'arrête un instant (le temps de jeu aussi).
+  if (G.hitstop > 0) { G.hitstop -= dt; return }
   G.t += dt;
   const [ix, iy] = moveVector(), l = hyp(ix, iy);
   if (Math.abs(ix) > 0.1) p.face = Math.sign(ix);
@@ -78,6 +80,8 @@ export function update(dt: number) {
   const sp = pSpeed();
   p.x += ix * sp * dt; p.y += iy * sp * dt;
   p.inv -= dt; p.slow -= dt; p.lastHit += dt; G.rewind -= dt; G.shake -= dt;
+  for (const d of G.decals) d.t += dt;
+  G.decals = G.decals.filter((d) => d.t < 1.2);
   if (G.banner && (G.banner.t -= dt) <= 0) G.banner = null;
   // Gonflette : les cumuls retombent un par un après 3 s sans toucher.
   if (p.lastHit > 3 && p.st > 0 && (p.dec -= dt) <= 0) { p.st--; p.dec = 0.15 }
@@ -154,6 +158,7 @@ export function update(dt: number) {
 
   for (const m of G.met) if ((m.t -= dt) <= 0) {
     near(m.x, m.y, m.z + 1.5, (e) => { if (hyp(e.x - m.x, e.y - m.y) < m.z + e.r) hit(e, m.dm) });
+    hooks.sfx('boom');
     fxp('boom', m.x, m.y, '#ff8a1f', m.z);
   }
   G.met = G.met.filter((m) => m.t > 0);
@@ -179,12 +184,13 @@ export function update(dt: number) {
     const dx = p.x - o.x, dy = p.y - o.y, d = hyp(dx, dy) || 1;
     if (d < pr) o.mag = 1;
     if (o.mag) { o.x += (dx / d) * 12 * dt; o.y += (dy / d) * 12 * dt }
-    if (d < 0.5) { addXP(o.v); o.v = 0 }
+    if (d < 0.5) { addXP(o.v); o.v = 0; hooks.sfx('pickup') }
   }
   G.orbs = G.orbs.filter((o) => o.v > 0);
 
   for (const c of G.chests) if (G.state === 'play' && hyp(c.x - p.x, c.y - p.y) < 0.9) {
     c.got = true;
+    hooks.sfx('chest');
     hooks.cards(chestCards(), "Coffre d'élite", 'Une babiole, rare ou mieux.', false);
   }
   G.chests = G.chests.filter((c) => !c.got);

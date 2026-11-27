@@ -1,6 +1,6 @@
 import { R, hyp, pick } from '../core/util';
 import type { WeaponId } from '../data/game-data';
-import { G, wDmg, wZone, type Weapon } from './state';
+import { G, hooks, shake, wDmg, wZone, type Weapon } from './state';
 import { fxp, hit, near } from './world';
 
 /** Onde de l'haltère. Gonflette : +2 % de rayon et +1 % de dégâts par cumul (max 25). */
@@ -17,6 +17,14 @@ function fireMain(w: Weapon, x: number, y: number) {
   p.st = Math.min(25, p.st + n);
   if (n) p.lastHit = 0;
   fxp('ring', x, y, '#29f0ff', R0);
+  // Ressenti : son et tremblement proportionnels au nombre d'ennemis écrasés, fissure au sol,
+  // et un micro-gel de l'image quand l'onde en écrase 8 ou plus.
+  hooks.sfx('slam', n);
+  const k = Math.min(n, 12);
+  shake(0.1 + 0.012 * k, 2 + 0.5 * k);
+  if (n >= 8) G.hitstop = Math.max(G.hitstop, 0.05);
+  G.decals.push({ x, y, r: R0, t: 0, seed: G.nid++ });
+  if (G.decals.length > 6) G.decals.shift();
 }
 
 export const FIRE: Record<WeaponId, (w: Weapon) => void> = {
@@ -27,6 +35,7 @@ export const FIRE: Record<WeaponId, (w: Weapon) => void> = {
   },
   epee: (w) => {
     const p = G.p, rg = wZone(w), dm = wDmg(w), sides = w.sp.both ? [1, -1] : [(w.side = -w.side)];
+    hooks.sfx('swing');
     for (const s of sides) {
       near(p.x, p.y, rg + 1.5, (e) => {
         const dx = e.x - p.x, dy = e.y - p.y;
@@ -40,6 +49,7 @@ export const FIRE: Record<WeaponId, (w: Weapon) => void> = {
     near(p.x, p.y, rg, (e) => { const d = hyp(e.x - p.x, e.y - p.y); if (d < rg) c.push([d, e]) });
     if (!c.length) return;
     c.sort((a, b) => a[0] - b[0]);
+    hooks.sfx('arrow');
     for (let i = 0; i < n; i++) {
       const t = c[i % c.length][1], a = Math.atan2(t.y - p.y, t.x - p.x) + (i >= c.length ? (R() - 0.5) * 0.5 : 0);
       G.pr.push({ x: p.x, y: p.y - 0.4, vx: Math.cos(a) * 14, vy: Math.sin(a) * 14, life: rg / 14, dm: wDmg(w), pierce: 1, hs: new Set() });

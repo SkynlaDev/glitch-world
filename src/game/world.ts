@@ -1,6 +1,6 @@
 import { R, TAU, hyp } from '../core/util';
 import { BOSSD, ET, ZOMBIE_VARIANTS, need, type EnemyType } from '../data/game-data';
-import { G, bv, hooks, settings, taken, type Enemy, type Fx } from './state';
+import { G, bv, hooks, settings, shake, taken, type Enemy, type Fx } from './state';
 
 /* ---------- Grille spatiale (cellules de 2 u) ---------- */
 const grid = new Map<number, Enemy[]>(), CS = 2;
@@ -50,18 +50,20 @@ export function spawnBoss() {
 export function hurt(d: number) {
   const p = G.p;
   if (p.inv > 0 || G.state !== 'play') return;
-  p.hp -= d * taken(); p.inv = 0.5; G.shake = 0.18;
-  hooks.hurt(d);
+  p.hp -= d * taken(); p.inv = 0.5; shake(0.18, 6);
+  hooks.hurt(d); hooks.sfx('hurt');
   if (p.hp <= 0) { p.hp = 0; hooks.end(false) }
 }
 export function hit(e: Enemy, dmg: number) {
   if (e.dead) return;
   e.hp -= dmg; e.hitT = 0;
+  hooks.sfx('hit');
   if (settings.showNums && G.nums.length < 60) G.nums.push({ x: e.x + (R() - 0.5) * 0.5, y: e.y - e.r * 2, v: Math.round(dmg), t: 0 });
   if (e.hp <= 0) kill(e);
 }
 export function kill(e: Enemy) {
   e.dead = true; G.kills++;
+  hooks.sfx('kill');
   if (e.boss) { G.boss = null; G.bossDone = true; fxp('boom', e.x, e.y, '#ff2e88', 4); hooks.end(true); return }
   addOrb(e.x, e.y, e.elite ? 10 : 1);
   if (e.elite) G.chests.push({ x: e.x, y: e.y });
@@ -81,5 +83,5 @@ export function addOrb(x: number, y: number, v: number) {
 }
 export function addXP(v: number) {
   G.xp += v * (1 + 0.05 * bv('manuel'));
-  while (G.xp >= G.need) { G.xp -= G.need; G.lvl++; G.need = need(G.lvl); G.pendingLv++; G.lvTimes.push(G.t) }
+  while (G.xp >= G.need) { G.xp -= G.need; G.lvl++; G.need = need(G.lvl); G.pendingLv++; G.lvTimes.push(G.t); hooks.sfx('level') }
 }

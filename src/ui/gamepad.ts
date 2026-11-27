@@ -1,3 +1,4 @@
+import { unlock } from '../audio/sfx';
 import { input } from '../game/input';
 import { G, hooks } from '../game/state';
 import { $, togglePause } from './screens';
@@ -98,6 +99,7 @@ export function pollGamepad(dt: number) {
   const b = pad.buttons.map((x) => x.pressed);
   const old = prev;
   const pressed = (i: number) => b[i] && !old[i];
+  if (b.some((v, i) => v && !old[i])) unlock();
   prev = b;
   if (b.some((v, i) => v && i !== BTN.START && i !== BTN.SELECT) || Math.hypot(pad.axes[0] ?? 0, pad.axes[1] ?? 0) > 0.5) padActive = true;
 

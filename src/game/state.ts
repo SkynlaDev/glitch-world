@@ -22,6 +22,10 @@ export interface Chest { x: number; y: number; got?: boolean }
 export interface Meteor { x: number; y: number; t: number; z: number; dm: number }
 export interface Ring { x: number; y: number; r: number; gaps: number[]; done: number }
 export interface Later { t: number; fn: () => void }
+/** Fissure laissée au sol par l'haltère (seed = forme). */
+export interface Decal { x: number; y: number; r: number; t: number; seed: number }
+/** Sons joués par l'interface ; la logique ne fait que les nommer. */
+export type Sfx = 'slam' | 'hit' | 'kill' | 'pickup' | 'level' | 'hurt' | 'swing' | 'arrow' | 'boom' | 'chest';
 export type BossMove = 'drop' | 'sample' | 'chenille' | 'raye';
 export interface Telegraph { k: BossMove; t: number; x: number; y: number }
 export type GameState = 'menu' | 'play' | 'cards' | 'pause' | 'end';
@@ -34,6 +38,8 @@ export interface Game {
   main: Weapon; sec: Weapon | null; rerolls: number; pendingLv: number; lvTimes: number[];
   nx: Record<'livreur' | 'casseur' | 'videur' | 'fetard', number>; nextElite: number;
   boss: Enemy | null; bossDone: boolean; tele: Telegraph | null; rewind: number; shake: number; nid: number;
+  /** Amplitude du tremblement en px ; hitstop = gel de l'image (s) après un très gros coup. */
+  shakeAmp: number; hitstop: number; decals: Decal[];
   banner: { t: number; txt: string } | null; dirty: number;
 }
 
@@ -48,6 +54,8 @@ export const hooks = {
   end: (_win: boolean) => {},
   /** Le joueur vient de subir des dégâts (vibration de la manette). */
   hurt: (_dmg: number) => {},
+  /** Un événement sonore ; k = intensité (ex. nombre d'ennemis touchés par l'onde). */
+  sfx: (_name: Sfx, _k?: number) => {},
   cards: (_list: Card[], _title: string, _sub: string, _reroll: boolean) => {},
 };
 
@@ -60,9 +68,15 @@ export function newGame(): Game {
     en: [], orbs: [], pr: [], ep: [], fx: [], nums: [], pud: [], chests: [], met: [], rings: [], later: [],
     lvl: 1, xp: 0, need: need(1), kills: 0, bab: {}, babN: {}, main: newW('main'), sec: null, rerolls: 0, pendingLv: 0, lvTimes: [],
     nx: { livreur: 60, casseur: 120, videur: 180, fetard: 240 }, nextElite: 120,
-    boss: null, bossDone: false, tele: null, rewind: 0, shake: 0, nid: 1, banner: null, dirty: 1,
+    boss: null, bossDone: false, tele: null, rewind: 0, shake: 0, shakeAmp: 0, hitstop: 0, decals: [], nid: 1, banner: null, dirty: 1,
   };
   return G;
+}
+
+/** Tremblement d'écran : on garde le plus fort des deux. */
+export function shake(t: number, amp: number) {
+  G.shake = Math.max(G.shake, t);
+  G.shakeAmp = Math.max(G.shake > 0 ? G.shakeAmp : 0, amp);
 }
 
 /* ---------- Statistiques dérivées ---------- */

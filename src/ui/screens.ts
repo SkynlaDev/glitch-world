@@ -1,3 +1,4 @@
+import { audio, setSound } from '../audio/sfx';
 import { fmt, mmss } from '../core/util';
 import { BAB, HEROES, MODE, RAR, UNLOCK, WD } from '../data/game-data';
 import { ICON } from '../data/icons';
@@ -65,6 +66,7 @@ export function pause() {
   overlay('Pause', `${mmss(G.t)} · niveau ${G.lvl} · ${G.kills} ennemis tués`, [
     ['Reprendre', resume, true],
     ['Écran titre', menu],
+    [`Son : ${audio.on ? 'oui' : 'non'}`, () => { setSound(!audio.on); G.state = 'play'; pause() }],
     [`Chiffres de dégâts : ${settings.showNums ? 'oui' : 'non'}`, () => { settings.showNums = !settings.showNums; G.state = 'play'; pause() }],
     ['Test : aller à 9:30', () => {
       G.t = Math.max(G.t, 570);

@@ -10,6 +10,7 @@ beforeEach(() => {
   newGame();
   ended = null; offered = 0;
   hooks.end = (w) => { ended = w; G.state = 'end' };
+  hooks.sfx = () => {};
   // Simule un joueur qui prend toujours la première carte.
   hooks.cards = (list) => { offered++; list[0].apply(); G.state = 'play' };
 });
@@ -137,5 +138,25 @@ describe('animation de Steven', () => {
         expect(Math.abs(frame - HAMMER.hit)).toBeLessThanOrEqual(1);
       }
     }
+  });
+});
+
+describe('ressenti des coups', () => {
+  it("l'onde de l'haltère : son avec le nombre de touchés, fissure, tremblement et micro-gel à 8+", () => {
+    const sounds: [string, number | undefined][] = [];
+    hooks.sfx = (n, k) => { sounds.push([n, k]) };
+    G.p.hp = G.p.maxhp = 1e9;
+    for (let i = 0; i < 10; i++) spawn('zombie', false, G.p.x + Math.cos(i) * 1.2, G.p.y + Math.sin(i) * 1.2).hp = 1e6;
+    G.main.t = 0;
+    update(1 / 60);
+    const slam = sounds.find(([n]) => n === 'slam');
+    expect(slam?.[1]).toBe(10);
+    expect(G.decals.length).toBe(1);
+    expect(G.shake).toBeGreaterThan(0);
+    expect(G.hitstop).toBeGreaterThan(0);
+    // Pendant le micro-gel, le temps de jeu ne s'écoule pas.
+    const t = G.t;
+    update(1 / 60);
+    expect(G.t).toBe(t);
   });
 });
