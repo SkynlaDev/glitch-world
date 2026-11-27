@@ -20,7 +20,7 @@ img.px{image-rendering:pixelated}
 .slots{display:flex;flex-wrap:wrap;gap:4px;max-width:260px}
 .slot{position:relative;width:38px;height:38px;background:#0b0712cc;border:2px solid var(--pan2);border-radius:5px;display:grid;place-items:center}
 .slot.w{width:44px;height:44px;border-color:var(--cy)}
-.slot svg{width:70%;height:70%}
+.slot svg{width:70%;height:70%}.slot img,.ic img{width:88%;height:88%;filter:drop-shadow(0 0 2px #29f0ff88);image-rendering:pixelated;object-fit:contain}
 .slot b{position:absolute;right:-3px;bottom:-5px;font:700 11px Silkscreen,monospace;color:var(--yl)}
 #babs{margin-top:4px}
 #hf{position:fixed;right:10px;bottom:8px;font-size:16px;opacity:.55;pointer-events:none}

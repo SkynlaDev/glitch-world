@@ -3,7 +3,8 @@ const sv = (b: string) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke-linecap="square" shape-rendering="crispEdges">${b}</svg>`;
 
 export const ICON = {
-  main: sv('<rect x="1" y="6" width="5" height="12" fill="#7d8296" stroke="#1a1022"/><rect x="18" y="6" width="5" height="12" fill="#7d8296" stroke="#1a1022"/><rect x="6" y="10" width="12" height="4" fill="#d6dae6" stroke="#1a1022"/>'),
+  // Haltère Ego : sprite PixelLab 32 px (art/icons/raw), affiché en pixels nets.
+  main: '<img class="px" src="art/icons/haltere.png" alt="Haltère Ego" draggable="false">',
   epee: sv('<path d="M6 18 L19 5" stroke="#d6dae6" stroke-width="3"/><path d="M4 14 L10 20" stroke="#ffe14d" stroke-width="3"/><path d="M3 21 L6 18" stroke="#c88a4a" stroke-width="3"/>'),
   arc: sv('<path d="M8 3 Q21 12 8 21" stroke="#c88a4a" stroke-width="3"/><path d="M8 3 V21" stroke="#f4ecff"/><path d="M3 12 H18" stroke="#d6dae6" stroke-width="2"/><path d="M15 9 L18 12 L15 15" stroke="#d6dae6" stroke-width="2"/>'),
   meteo: sv('<path d="M3 21 L11 13" stroke="#ffe14d" stroke-width="3"/><circle cx="15" cy="9" r="6" fill="#ff8a1f" stroke="#1a1022"/><rect x="13" y="6" width="3" height="3" fill="#ffe14d"/>'),
