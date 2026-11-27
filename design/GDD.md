@@ -61,3 +61,19 @@ PV × (1 + 12 % par minute). Élites toutes les 75 s dès 2:00 : PV ×8, taille 
 
 ## Prévu (annoncé à l'écran titre)
 Glitchs, hacker, marchand.
+
+## Fragments de code (v0.2)
+L'arme principale a 5 emplacements : 3 ouverts au départ, le 4e au niveau 10, le 5e au niveau 20. Armes secondaires désactivées (`MODE.secondary`).
+La chaîne se lit de gauche à droite ; chaque fragment agit sur ce qui sort du précédent. L'ordre compte.
+
+| Fragment | Code | Effet |
+|---|---|---|
+| Écho | `echo()` | L'onde se répète 0,4 s plus tard (4 max) |
+| Scission | `split(3)` | L'onde devient 3 ondes (rayon ×0,55, dégâts ×0,8) ; 2 scissions = 9 ondes |
+| Inversion | `invert()` | Aspire au lieu de repousser |
+| Surcharge | `overclock()` | Dégâts ×1,6 ; cadence −25 % par Surcharge présente |
+| Sur kill → | `onKill:` | Coupe la chaîne : la suite part en petite onde (rayon ×0,5, dégâts ×0,6) là où un zombie meurt. Profondeur max 3, 30 ondes déclenchées max (recharge 20/s) |
+| Boucle | `loop(2)` | Le fragment suivant agit deux fois |
+
+- **Obtention** : un zombie porteur (halo magenta, puce `</>` au-dessus de la tête, PV ×2) apparaît à 0:30 puis toutes les 40–60 s (2 max en même temps) et lâche un fragment. Ramassé, il va dans le premier emplacement ouvert libre, sinon en réserve.
+- **Réarrangement** : seulement chez le **hacker**, qui apparaît à 1:30 puis toutes les 2 min, à 7 u, et reste 40 s (le temps ne s'écoule que hors de sa zone). Rester 3 s dans sa zone (rayon 1,6 u) remplit la jauge et ouvre l'atelier, en pause. Toucher un fragment puis un emplacement pour les échanger.

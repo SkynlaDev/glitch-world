@@ -3,7 +3,9 @@ import { BOSSD, HAMMER, MODE, ZOMBIE_VARIANTS, need } from '../src/data/game-dat
 import { bCard, chestCards, makeCards, rollR } from '../src/game/cards';
 import { G, hooks, newGame, wDelay, wDmg, wZone } from '../src/game/state';
 import { dirIndex, update } from '../src/game/update';
-import { addXP, hit, spawn } from '../src/game/world';
+import { addXP, buildGrid, hit, spawn, takeFrag } from '../src/game/world';
+import { castChain, compile, describeChain, swapFrag } from '../src/game/chain';
+import { SLOTS } from '../src/data/fragments';
 
 let ended: boolean | null, offered: number;
 beforeEach(() => {
@@ -11,6 +13,7 @@ beforeEach(() => {
   ended = null; offered = 0;
   hooks.end = (w) => { ended = w; G.state = 'end' };
   hooks.sfx = () => {};
+  hooks.hack = () => {};
   // Simule un joueur qui prend toujours la première carte.
   hooks.cards = (list) => { offered++; list[0].apply(); G.state = 'play' };
 });
@@ -38,11 +41,22 @@ describe('formules', () => {
 });
 
 describe('cartes', () => {
-  it("le premier niveau propose les 3 armes secondaires", () => {
-    const c = makeCards();
-    expect(c.map((x) => x.title)).toEqual(['Épée', 'Arc', 'Météorite']);
-    c[1].apply();
-    expect(G.sec?.id).toBe('arc');
+  it("le premier niveau propose les 3 armes secondaires (MODE.secondary)", () => {
+    MODE.secondary = true;
+    try {
+      const c = makeCards();
+      expect(c.map((x) => x.title)).toEqual(['Épée', 'Arc', 'Météorite']);
+      c[1].apply();
+      expect(G.sec?.id).toBe('arc');
+    } finally { MODE.secondary = false }
+  });
+  it('armes secondaires désactivées : jamais proposées, seule l’haltère évolue', () => {
+    for (let i = 0; i < 100; i++) {
+      const c = makeCards();
+      expect(c.some((x) => ['Épée', 'Arc', 'Météorite'].includes(x.title))).toBe(false);
+      c[0].apply();
+    }
+    expect(G.sec).toBeNull();
   });
   it('ensuite, 3 cartes sans doublon', () => {
     makeCards()[0].apply();
@@ -171,5 +185,90 @@ describe('ressenti des coups', () => {
     const t = G.t;
     update(1 / 60);
     expect(G.t).toBe(t);
+  });
+});
+
+describe('fragments de code', () => {
+  it('5 emplacements, 3 ouverts ; le 4e au niveau 10, le 5e au niveau 20', () => {
+    expect(G.slots.length).toBe(SLOTS.total);
+    expect(G.open).toBe(3);
+    while (G.lvl < 10) addXP(G.need);
+    expect(G.open).toBe(4);
+    while (G.lvl < 20) addXP(G.need);
+    expect(G.open).toBe(5);
+  });
+  it("l'ordre compte : la même main ne donne pas la même chaîne", () => {
+    const a = compile(['scission', 'surkill', 'echo', null, null]);
+    expect(a).toMatchObject({ split: 1, echo: 0, payload: 2 });
+    expect(compile(['scission', 'surkill', 'echo', null, null], a.payload)).toMatchObject({ split: 0, echo: 1, payload: -1 });
+    const b = compile(['surkill', 'scission', 'echo', null, null]);
+    expect(b).toMatchObject({ split: 0, echo: 0, payload: 1 });
+    expect(compile(['surkill', 'scission', 'echo', null, null], 1)).toMatchObject({ split: 1, echo: 1 });
+  });
+  it('Boucle double le fragment suivant, y compris un déclencheur', () => {
+    expect(compile(['boucle', 'echo', 'echo']).echo).toBe(3);
+    expect(compile(['boucle', 'surkill']).trig).toBe(2);
+  });
+  it('Surcharge : +60 % de dégâts, cadence ralentie de 25 %', () => {
+    const d0 = wDelay(G.main);
+    G.slots[0] = 'surcharge';
+    expect(compile(G.slots).mult).toBeCloseTo(1.6);
+    expect(wDelay(G.main)).toBeCloseTo(d0 * 1.25);
+  });
+  it('Écho programme la répétition ; Sur kill → lance une onde là où un zombie meurt', () => {
+    G.en.length = 0; G.later.length = 0;
+    G.slots[0] = 'echo';
+    castChain(G.main, 0, 0, 0, 0, 2.5, 10, true);
+    expect(G.later.length).toBe(1);
+    G.later.length = 0;
+    G.slots[0] = 'surkill';
+    spawn('zombie', false, 1, 0);
+    buildGrid();
+    castChain(G.main, 0, 0, 0, 0, 2.5, 1e6, true);
+    expect(G.kills).toBe(1);
+    expect(G.later.length).toBe(1);
+  });
+  it('résumé lisible de la chaîne', () => {
+    expect(describeChain(['surcharge', 'surkill', 'scission', null, null])).toEqual([
+      'Onde : dégâts ×1,6.', 'Sur kill → petite onde : divisée en 3.',
+    ]);
+  });
+  it('un porteur lâche un fragment ; il va dans un emplacement libre, puis en réserve', () => {
+    G.t = 30;
+    update(1 / 60);
+    const c = G.en.find((e) => e.carry)!;
+    expect(c).toBeTruthy();
+    hit(c, 1e9);
+    expect(G.gfr.length).toBe(1);
+    G.gfr[0].x = G.p.x; G.gfr[0].y = G.p.y; G.gfr[0].t = 1;
+    update(1 / 60);
+    expect(G.slots.filter(Boolean).length).toBe(1);
+    takeFrag('echo'); takeFrag('echo');
+    expect(G.slots.filter(Boolean).length).toBe(3);
+    takeFrag('boucle');
+    expect(G.bag).toEqual(['boucle']);
+  });
+  it("atelier : échanger, ranger en réserve ; un emplacement verrouillé reste fermé", () => {
+    G.slots = ['echo', 'scission', null, null, null]; G.bag = ['boucle'];
+    swapFrag({ z: 'slot', i: 0 }, { z: 'slot', i: 1 });
+    expect(G.slots.slice(0, 2)).toEqual(['scission', 'echo']);
+    swapFrag({ z: 'bag', i: 0 }, { z: 'slot', i: 2 });
+    expect(G.slots[2]).toBe('boucle'); expect(G.bag).toEqual([]);
+    swapFrag({ z: 'slot', i: 0 }, { z: 'bag', i: 0 });
+    expect(G.slots[0]).toBeNull(); expect(G.bag).toEqual(['scission']);
+    swapFrag({ z: 'bag', i: 0 }, { z: 'slot', i: 4 });
+    expect(G.slots[4]).toBeNull();
+  });
+  it('le hacker arrive ; rester 3 s dans sa zone ouvre l’atelier', () => {
+    let opened = 0;
+    hooks.hack = () => { opened++; G.state = 'hack' };
+    G.p.hp = G.p.maxhp = 1e9;
+    G.t = 90; G.nextCarrier = 1e9;
+    update(1 / 60);
+    const hk = G.hacker!;
+    expect(hk).toBeTruthy();
+    for (let i = 0; i < 60 * 4 && G.state === 'play'; i++) { G.p.x = hk.x; G.p.y = hk.y; update(1 / 60) }
+    expect(opened).toBe(1);
+    expect(G.hacker).toBeNull();
   });
 });

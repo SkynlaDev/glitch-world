@@ -1,6 +1,6 @@
 import { mmss } from '../core/util';
 import { BAB } from '../data/game-data';
-import { ICON } from '../data/icons';
+import { FICON, ICON } from '../data/icons';
 import { G } from '../game/state';
 import { $ } from './screens';
 
@@ -13,6 +13,15 @@ function slots() {
     d.innerHTML = w ? `${ICON[w.id]}<b>${w.lv}</b>` : '';
     ws.append(d);
   }
+  // Emplacements de fragments sous l'arme : ouverts, vides ou verrouillés.
+  const fs = $('fslots');
+  fs.innerHTML = '';
+  G.slots.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'fslot' + (i >= G.open ? ' lock' : '');
+    d.innerHTML = f ? FICON[f] : '';
+    fs.append(d);
+  });
   const bs = $('babs');
   bs.innerHTML = '';
   for (const b of BAB) if (G.babN[b.id]) {

@@ -55,6 +55,24 @@ img.px{image-rendering:pixelated}
 .fiche{grid-column:1/-1;display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:center;width:100%;max-width:720px;margin:0 auto;padding:16px;background:var(--pan);border:3px solid var(--pan2);border-radius:8px;text-align:left}
 .fiche img{width:140px;height:140px;object-fit:contain;background:#0b0712;border-radius:8px;padding:10px}
 .fiche h3{margin:0;font:700 20px Silkscreen,monospace}.fiche dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:20px}.fiche dt{opacity:.6}.fiche dd{margin:0}
+/* Emplacements de fragments (HUD) et atelier du hacker. */
+.fslots{display:flex;gap:3px;margin-top:4px}
+.fslot{width:22px;height:22px;background:#0b0712cc;border:2px solid #ff2e8866;border-radius:3px;display:grid;place-items:center}
+.fslot svg{width:16px;height:16px}.fslot.lock{border-color:#ffffff1a;background:repeating-linear-gradient(45deg,#0b0712cc 0 3px,#2a214099 3px 6px)}
+.hack{grid-column:1/-1;display:flex;flex-direction:column;gap:12px;max-width:720px;margin:0 auto;width:100%}
+.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fl{font:700 13px Silkscreen,monospace;color:var(--cy);min-width:86px}
+.frow.bag .fl{color:var(--ink);opacity:.6}
+.fs{width:84px;height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--pan);border:3px solid var(--pan2);border-radius:8px;color:var(--ink);font:700 10px Silkscreen,monospace;cursor:pointer;box-shadow:0 0 0 2px #000}
+.fs svg{width:40px;height:40px}.fs .em{opacity:.35}.fs .lk{font-size:26px;opacity:.5}
+.fs.f-mod{border-color:var(--cy)}.fs.f-trig{border-color:var(--mag)}.fs.f-mult{border-color:#a23cf0}
+.fs.sel{outline:3px solid var(--yl);outline-offset:3px;transform:translateY(-3px)}
+.fs.lock{cursor:not-allowed;background:repeating-linear-gradient(45deg,var(--pan) 0 6px,#0b0712 6px 12px)}
+.fs.gp-focus{outline:3px solid var(--yl);outline-offset:3px}
+.finfo{background:var(--pan);border:3px solid var(--pan2);border-radius:8px;padding:10px 14px;text-align:left;min-height:64px}
+.finfo strong{font:700 15px Silkscreen,monospace}.finfo code{color:var(--cy);font-size:18px}.finfo p{margin:4px 0 0}.finfo .hint{opacity:.6;font-size:18px}
+.fres{list-style:none;margin:0;padding:0;text-align:left;font-size:19px;color:var(--yl)}
+@media(max-width:600px),(max-height:500px){.fs{width:58px;height:58px;font-size:8px}.fs svg{width:28px;height:28px}.fl{min-width:100%}.frow{gap:6px}}
 @media(max-width:600px){#cards{grid-template-columns:1fr}.roster{gap:8px}.hero{padding:8px 2px}.hero img{width:48px;height:48px}.hero span{font-size:13px}.fiche{grid-template-columns:64px 1fr;padding:12px}.fiche img{width:64px;height:64px;padding:4px}.fiche dl{font-size:18px}#hf{display:none}.slots{max-width:150px}}
 /* Téléphone (portrait ou paysage) : cartes et fiches compactes. */
 @media(max-width:600px),(max-height:500px){

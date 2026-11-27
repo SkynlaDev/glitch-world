@@ -1,7 +1,7 @@
 import { R, fmt, pick } from '../core/util';
-import { BAB, RAR, SECONDARY, WD } from '../data/game-data';
+import { BAB, MODE, RAR, SECONDARY, WD } from '../data/game-data';
 import { ICON } from '../data/icons';
-import { G, bv, newW, wDelay, wZone, type Card, type Weapon } from './state';
+import { G, bv, newW, surcharges, wDelay, wZone, type Card, type Weapon } from './state';
 
 /** Tire une rareté ; les poids montent avec le temps. min = rareté minimale (index). */
 export function rollR(min = 0): number {
@@ -20,7 +20,7 @@ export function wCard(w: Weapon, r: number): Card {
     ({ ...base, tag, title, desc, apply: () => { fn(); w.lv++; G.dirty = 1 } });
   const over = () => mkc('Arme · débordement', d.n, `Stat au seuil : +${fmt(15 * m)} % de dégâts`, () => (w.over += 0.15 * m));
   if (k === 'dmg') return mkc('Arme', `${d.n} : dégâts`, `+${fmt(10 * m)} % de dégâts de base`, () => (w.dmg += 0.1 * m));
-  if (k === 'spd') return wDelay(w) <= 0.301 ? over() : mkc('Arme', `${d.n} : cadence`, `+${fmt(6 * m)} % de vitesse d'attaque`, () => (w.spd += 0.06 * m));
+  if (k === 'spd') return wDelay(w) <= 0.301 * (w.id === 'main' ? 1.25 ** surcharges() : 1) ? over() : mkc('Arme', `${d.n} : cadence`, `+${fmt(6 * m)} % de vitesse d'attaque`, () => (w.spd += 0.06 * m));
   if (k === 'zone') return wZone(w) >= d.cap - 0.01 ? over() : mkc('Arme', `${d.n} : ${d.zl}`, `+${fmt(10 * m)} % de ${d.zl}`, () => (w.zone += 0.1 * m));
   const s = d.sp.find((x) => x.k === k)!;
   if (s.bin) return w.sp[k] ? over() : mkc('Arme · carte spéciale', `${d.n} : ${s.n}`, 'Une fois, puis débordement', () => (w.sp[k] = 1));
@@ -47,12 +47,12 @@ export function bCard(r: number, used: Set<string>): Card {
 
 /** Tirage de montée de niveau : 1er niveau = choix de l'arme secondaire, ensuite arme + babiole + l'un ou l'autre. */
 export function makeCards(): Card[] {
-  if (!G.sec)
+  if (MODE.secondary && !G.sec)
     return SECONDARY.map((id) => ({
       r: -1, icon: ICON[id], lv: 'Nouveau', tag: 'Arme secondaire, gardée toute la run', title: WD[id].n, desc: WD[id].desc!,
       apply: () => { G.sec = newW(id); G.dirty = 1 },
     }));
-  const used = new Set<string>(), ws = [G.main, G.sec];
+  const used = new Set<string>(), ws = [G.main, G.sec].filter((w): w is Weapon => !!w);
   const W1 = (): Card | undefined => {
     for (let k = 0; k < 12; k++) { const c = wCard(pick(ws), rollR()); if (!used.has(c.key!)) { used.add(c.key!); return c } }
   };

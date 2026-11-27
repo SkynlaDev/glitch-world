@@ -1,10 +1,11 @@
 import { R, TAU, hyp, pick } from '../core/util';
 import { BOSS_TIME, HAMMER, MODE, UNLOCK, type EnemyType } from '../data/game-data';
+import { CARRIER, HACKER } from '../data/fragments';
 import { chestCards, makeCards } from './cards';
 import { moveVector } from './input';
 import { G, bv, hooks, pSpeed, pickR, wDelay, type BossMove, type Enemy } from './state';
 import { FIRE } from './weapons';
-import { addXP, buildGrid, fxp, hurt, hit, near, spawn, spawnBoss } from './world';
+import { addXP, buildGrid, fxp, hurt, hit, near, spawn, spawnBoss, takeFrag } from './world';
 
 const MAX_EN = 260;
 
@@ -22,6 +23,21 @@ function director() {
     G.bossDone = true; hooks.end(true); return;
   }
   if (bossOn) return;
+  // Zombie porteur : il scintille et lâche un fragment de code. Jamais plus de 2 à la fois.
+  if (G.t >= G.nextCarrier) {
+    G.nextCarrier = G.t + CARRIER.every + R() * CARRIER.jitter;
+    if (G.en.filter((e) => e.carry).length < 2) {
+      const a = R() * TAU, e = spawn('zombie', false, G.p.x + Math.cos(a) * 13, G.p.y + Math.sin(a) * 13);
+      e.carry = true; e.hp = e.max = e.max * 2;
+    }
+  }
+  // Le hacker s'installe à quelques pas, le temps de passer réarranger ses fragments.
+  if (!G.hacker && G.t >= G.nextHacker) {
+    G.nextHacker = G.t + HACKER.every;
+    const a = R() * TAU;
+    G.hacker = { x: G.p.x + Math.cos(a) * HACKER.dist, y: G.p.y + Math.sin(a) * HACKER.dist, life: HACKER.life, fill: 0 };
+    G.banner = { t: 3, txt: 'Le hacker est là · reste dans sa zone' };
+  }
   const ev = { livreur: Math.max(2.2, 6 - 0.3 * m), casseur: Math.max(3, 8 - 0.4 * m), videur: Math.max(8, 22 - m), fetard: Math.max(4, 10 - 0.5 * m) };
   for (const t of Object.keys(ev) as (keyof typeof ev)[]) {
     if (!MODE.specials) break;
@@ -193,6 +209,24 @@ export function update(dt: number) {
   }
   G.orbs = G.orbs.filter((o) => o.v > 0);
 
+  // Fragments au sol : petit saut à l'apparition, puis on les prend en passant dessus.
+  for (const f of G.gfr) {
+    f.t += dt;
+    if (f.t > 0.4 && hyp(f.x - p.x, f.y - p.y) < 0.8) { takeFrag(f.id); f.t = -1 }
+  }
+  G.gfr = G.gfr.filter((f) => f.t >= 0);
+  G.chainBudget = Math.min(30, G.chainBudget + 20 * dt);
+
+  // Hacker : la jauge se remplit dans sa zone et retombe dehors ; pleine, elle ouvre l'atelier (le jeu se met en pause).
+  const hk = G.hacker;
+  if (hk) {
+    const inside = hyp(hk.x - p.x, hk.y - p.y) < HACKER.radius;
+    hk.fill = Math.max(0, hk.fill + (inside ? dt / HACKER.fill : -dt / HACKER.fill / 2));
+    hk.life -= inside ? 0 : dt;
+    if (hk.fill >= 1 && G.state === 'play') { G.hacker = null; hooks.sfx('hack'); hooks.hack() }
+    else if (hk.life <= 0) { G.hacker = null; G.banner = { t: 2, txt: 'Le hacker est parti' } }
+  }
+
   for (const c of G.chests) if (G.state === 'play' && hyp(c.x - p.x, c.y - p.y) < 0.9) {
     c.got = true;
     hooks.sfx('chest');
@@ -208,11 +242,12 @@ export function update(dt: number) {
 
   if (G.state === 'play' && G.pendingLv > 0) {
     G.pendingLv--;
+    const sec = MODE.secondary && !G.sec;
     hooks.cards(
       makeCards(),
-      G.sec ? `Niveau ${G.lvl - G.pendingLv} !` : 'Arme secondaire',
-      G.sec ? 'Choisis une carte.' : "Choisis ton arme secondaire. Elle reste jusqu'à la fin de la run.",
-      !!G.sec,
+      sec ? 'Arme secondaire' : `Niveau ${G.lvl - G.pendingLv} !`,
+      sec ? "Choisis ton arme secondaire. Elle reste jusqu'à la fin de la run." : 'Choisis une carte.',
+      !sec,
     );
   }
 }

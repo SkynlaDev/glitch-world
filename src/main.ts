@@ -9,11 +9,12 @@ import { draw, drawMenuBg } from './render/draw';
 import { bindControls } from './ui/controls';
 import { bindGamepad, pollGamepad } from './ui/gamepad';
 import { hud } from './ui/hud';
-import { menu, start } from './ui/screens';
+import { menu, showHack, start } from './ui/screens';
 
 bindControls();
 bindGamepad();
 hooks.sfx = play;
+hooks.hack = showHack;
 // Le navigateur n'autorise le son qu'après une action du joueur.
 for (const ev of ['pointerdown', 'keydown'] as const) addEventListener(ev, unlock);
 

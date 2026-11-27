@@ -1,4 +1,5 @@
 import { R, TAU, hyp } from '../core/util';
+import { FRAG, HACKER } from '../data/fragments';
 import { input } from '../game/input';
 import { G, settings, type Enemy } from '../game/state';
 import { SPR, type Sprite } from './sprites';
@@ -86,6 +87,27 @@ export function draw() {
     } else dS(sp, x, y, k, false, false);
   }
   for (const c of G.chests) { shadow(X(c.x), Y(c.y), 0.4 * S); dS(SPR.chest, X(c.x), Y(c.y), (S / 16) * 1.4, false, false) }
+  // Fragments de code au sol : puce « </> » qui flotte, bordure à la couleur de sa famille.
+  for (const f of G.gfr) {
+    if (!vis(f.x, f.y)) continue;
+    const hop = f.t < 0.4 ? Math.sin((f.t / 0.4) * Math.PI) * 0.5 * S : 0;
+    drawChip(X(f.x), Y(f.y) - 0.35 * S + Math.sin(G.t * 4) * 3 - hop, 0.5 * S, FRAG[f.id].col);
+  }
+  // Hacker : zone au sol, jauge qui se remplit quand on y reste, et flèche au bord de l'écran s'il est hors champ.
+  const hk = G.hacker;
+  if (hk) {
+    const hx = X(hk.x), hy = Y(hk.y), rr = HACKER.radius * S;
+    ctx.fillStyle = '#29f0ff14'; ctx.strokeStyle = '#29f0ff'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
+    ctx.beginPath(); ctx.ellipse(hx, hy, rr, rr * 0.6, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+    if (hk.fill > 0) {
+      ctx.strokeStyle = '#ff2e88'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.ellipse(hx, hy, rr, rr * 0.6, 0, -Math.PI / 2, -Math.PI / 2 + TAU * hk.fill); ctx.stroke();
+    }
+    shadow(hx, hy, 0.45 * S);
+    const blink = hk.life < 8 && Math.floor(G.t * 6) % 2;
+    if (!blink) dS(SPR.hacker, hx, hy, S * 0.07, hk.x > p.x, false);
+    if (!vis(hk.x, hk.y, -1)) edgeArrow(hx, hy, 'HACKER');
+  }
 
   // Tri en profondeur : ennemis visibles + joueur.
   const list: (Enemy | { me: true; y: number })[] = G.en.filter((e) => vis(e.x, e.y, 3));
@@ -181,6 +203,28 @@ export function draw() {
   }
 }
 
+/** Puce de fragment de code. */
+function drawChip(x: number, y: number, s: number, col: string) {
+  ctx.fillStyle = '#0b0712'; ctx.fillRect(x - s / 2 - 2, y - s / 2 - 2, s + 4, s + 4);
+  ctx.fillStyle = col; ctx.fillRect(x - s / 2, y - s / 2, s, s);
+  ctx.fillStyle = '#1a1022'; ctx.fillRect(x - s / 2 + 3, y - s / 2 + 3, s - 6, s - 6);
+  ctx.font = `700 ${Math.max(9, s * 0.42)}px ${FONT_T}`; ctx.fillStyle = col;
+  const t = '</>', tw = ctx.measureText(t).width;
+  ctx.fillText(t, x - tw / 2, y + s * 0.16);
+}
+/** Flèche au bord de l'écran vers une cible hors champ. */
+function edgeArrow(tx: number, ty: number, label: string) {
+  const { W, H } = view, cx = W / 2, cy = H / 2, a = Math.atan2(ty - cy, tx - cx), m = 40;
+  const k = Math.min((W / 2 - m) / Math.abs(Math.cos(a) || 1e-6), (H / 2 - m) / Math.abs(Math.sin(a) || 1e-6));
+  const x = cx + Math.cos(a) * k, y = cy + Math.sin(a) * k;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+  ctx.fillStyle = '#29f0ff'; ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(-8, -10); ctx.lineTo(-8, 10); ctx.closePath(); ctx.fill();
+  ctx.restore();
+  ctx.font = `700 12px ${FONT_T}`; ctx.fillStyle = '#29f0ff';
+  const tw = ctx.measureText(label).width;
+  ctx.fillText(label, Math.min(W - tw - 6, Math.max(6, x - tw / 2)), y + (y > cy ? -16 : 26));
+}
+
 function drawPlayer(sh: number) {
   const { W, H, S } = view, p = G.p;
   // Gonflette : Steven grossit à 10 et 20 cumuls.
@@ -218,7 +262,13 @@ function drawEnemy(e: Enemy, x: number, y: number) {
   }
   if (e.type === 'zombie' && !e.boss) {
     shadow(x, y, 0.32 * S * (e.elite ? 1.3 : 1));
+    // Porteur : halo magenta qui pulse sous lui.
+    if (e.carry) {
+      ctx.fillStyle = `rgba(255,46,136,${0.25 + 0.15 * Math.sin(G.t * 8)})`;
+      ctx.beginPath(); ctx.ellipse(x, y, 0.6 * S, 0.3 * S, 0, 0, TAU); ctx.fill();
+    }
     const h = drawZombie(e, x, y, e.elite ? 1.3 : 1, white);
+    if (h && e.carry) drawChip(x, y - h - 0.45 * S + Math.sin(G.t * 5) * 2, 0.36 * S, '#ff2e88');
     if (h) {
       if (e.hitT < 2) {
         const w = e.r * 2 * S, top = y - h - 4;

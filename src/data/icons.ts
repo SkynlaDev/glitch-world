@@ -1,3 +1,4 @@
+import type { FragId } from './fragments';
 /** Icônes SVG pixel art des armes et babioles (chaînes pures, sans DOM). */
 const sv = (b: string) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke-linecap="square" shape-rendering="crispEdges">${b}</svg>`;
@@ -19,4 +20,14 @@ export const ICON = {
   manuel: sv('<rect x="4" y="3" width="16" height="18" fill="#a23cf0" stroke="#1a1022"/><rect x="4" y="3" width="3" height="18" fill="#6e1fb0"/><rect x="9" y="7" width="8" height="2" fill="#f4ecff"/><rect x="9" y="11" width="6" height="2" fill="#f4ecff"/>'),
   f5: sv('<rect x="2" y="4" width="20" height="16" rx="2" fill="#2a2140" stroke="#29f0ff" stroke-width="2"/><path d="M6 8 H10 M6 8 V16 M6 12 H9 M17 8 H13 V12 H16 V16 H13" stroke="#29f0ff" stroke-width="2"/>'),
   skull: sv('<rect x="5" y="3" width="14" height="13" rx="4" fill="#f4ecff" stroke="#1a1022"/><rect x="8" y="16" width="8" height="5" fill="#f4ecff" stroke="#1a1022"/><rect x="8" y="8" width="3" height="3" fill="#1a1022"/><rect x="13" y="8" width="3" height="3" fill="#1a1022"/>'),
+};
+
+/** Icônes des fragments de code. */
+export const FICON: Record<FragId, string> = {
+  echo: sv('<path d="M5 6 Q11 12 5 18" stroke="#29f0ff" stroke-width="3"/><path d="M11 4 Q19 12 11 20" stroke="#29f0ff" stroke-width="2" opacity=".6"/><path d="M17 3 Q26 12 17 21" stroke="#29f0ff" stroke-width="2" opacity=".3"/>'),
+  scission: sv('<rect x="9" y="2" width="6" height="6" fill="#29f0ff" stroke="#1a1022"/><rect x="2" y="15" width="6" height="6" fill="#29f0ff" stroke="#1a1022"/><rect x="16" y="15" width="6" height="6" fill="#29f0ff" stroke="#1a1022"/><path d="M12 9 V12 M12 12 L6 15 M12 12 L18 15" stroke="#f4ecff" stroke-width="2"/>'),
+  inversion: sv('<path d="M2 12 H9 M6 8 L10 12 L6 16" stroke="#29f0ff" stroke-width="3"/><path d="M22 12 H15 M18 8 L14 12 L18 16" stroke="#29f0ff" stroke-width="3"/><rect x="11" y="10" width="2" height="4" fill="#f4ecff"/>'),
+  surcharge: sv('<path d="M14 1 L5 13 H11 L9 23 L19 9 H13 Z" fill="#ffe14d" stroke="#1a1022"/>'),
+  surkill: sv('<rect x="2" y="5" width="11" height="10" rx="3" fill="#f4ecff" stroke="#1a1022"/><rect x="4" y="15" width="7" height="4" fill="#f4ecff" stroke="#1a1022"/><rect x="4" y="9" width="2" height="3" fill="#1a1022"/><rect x="9" y="9" width="2" height="3" fill="#1a1022"/><path d="M14 12 H21 M18 8 L22 12 L18 16" stroke="#ff2e88" stroke-width="3"/>'),
+  boucle: sv('<path d="M7 8 H16 A5 5 0 0 1 16 18 H8 A5 5 0 0 1 6 9" stroke="#a23cf0" stroke-width="3"/><path d="M13 4 L17 8 L13 12" stroke="#a23cf0" stroke-width="3"/>'),
 };

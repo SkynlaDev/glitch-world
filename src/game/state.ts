@@ -1,4 +1,5 @@
 import { WD, need, type BaubleId, type EnemyDef, type EnemyType, type WeaponId } from '../data/game-data';
+import { CARRIER, HACKER, SLOTS, type FragId } from '../data/fragments';
 
 export interface Weapon { id: WeaponId; dmg: number; spd: number; zone: number; over: number; sp: Record<string, number>; t: number; side: number; lv: number }
 export interface Player { x: number; y: number; hp: number; maxhp: number; face: number; inv: number; slow: number; st: number; dec: number; lastHit: number; mv: boolean;
@@ -11,6 +12,8 @@ export interface Enemy {
   hitT: number; cd: number; kx: number; ky: number; id: number; vx: number; vy: number; dead?: boolean; boss?: boolean; atk?: number;
   /** Index dans ZOMBIE_VARIANTS (apparence seulement). */
   variant: number;
+  /** Porteur : il scintille et lâche un fragment de code en mourant. */
+  carry?: boolean;
 }
 export interface Projectile { x: number; y: number; vx: number; vy: number; life: number; dm: number; pierce: number; hs: Set<Enemy> }
 export interface EnemyShot { x: number; y: number; vx: number; vy: number; life: number }
@@ -23,13 +26,17 @@ export interface Chest { x: number; y: number; got?: boolean }
 export interface Meteor { x: number; y: number; t: number; z: number; dm: number }
 export interface Ring { x: number; y: number; r: number; gaps: number[]; done: number }
 export interface Later { t: number; fn: () => void }
+/** Fragment de code tombé au sol. */
+export interface GroundFrag { x: number; y: number; id: FragId; t: number }
+/** Le hacker : rester dans sa zone remplit la jauge (fill 0→1), puis l'interface s'ouvre. */
+export interface Hacker { x: number; y: number; life: number; fill: number }
 /** Fissure laissée au sol par l'haltère (seed = forme). */
 export interface Decal { x: number; y: number; r: number; t: number; seed: number }
 /** Sons joués par l'interface ; la logique ne fait que les nommer. */
-export type Sfx = 'slam' | 'hit' | 'kill' | 'pickup' | 'level' | 'hurt' | 'swing' | 'arrow' | 'boom' | 'chest';
+export type Sfx = 'slam' | 'hit' | 'kill' | 'pickup' | 'level' | 'hurt' | 'swing' | 'arrow' | 'boom' | 'chest' | 'frag' | 'glitch' | 'hack';
 export type BossMove = 'drop' | 'sample' | 'chenille' | 'raye';
 export interface Telegraph { k: BossMove; t: number; x: number; y: number }
-export type GameState = 'menu' | 'play' | 'cards' | 'pause' | 'end';
+export type GameState = 'menu' | 'play' | 'cards' | 'pause' | 'end' | 'hack';
 
 export interface Game {
   t: number; state: GameState; p: Player;
@@ -42,6 +49,11 @@ export interface Game {
   /** Amplitude du tremblement en px ; hitstop = gel de l'image (s) après un très gros coup. */
   shakeAmp: number; hitstop: number; decals: Decal[];
   banner: { t: number; txt: string } | null; dirty: number;
+  /** Fragments de code : emplacements de l'arme (null = vide), nombre ouverts, réserve, fragments au sol. */
+  slots: (FragId | null)[]; open: number; bag: FragId[]; gfr: GroundFrag[];
+  hacker: Hacker | null; nextHacker: number; nextCarrier: number;
+  /** Ondes déclenchées encore autorisées (se recharge avec le temps) : borne les réactions en chaîne. */
+  chainBudget: number;
 }
 
 export interface Card { r: number; icon: string; tag: string; title: string; desc: string; lv: string; key?: string; apply: () => void }
@@ -58,6 +70,8 @@ export const hooks = {
   /** Un événement sonore ; k = intensité (ex. nombre d'ennemis touchés par l'onde). */
   sfx: (_name: Sfx, _k?: number) => {},
   cards: (_list: Card[], _title: string, _sub: string, _reroll: boolean) => {},
+  /** Le joueur a rempli la jauge du hacker : ouvrir l'atelier des fragments. */
+  hack: () => {},
 };
 
 export const newW = (id: WeaponId): Weapon => ({ id, dmg: 0, spd: 0, zone: 0, over: 0, sp: {}, t: 0.4, side: 1, lv: 1 });
@@ -70,6 +84,8 @@ export function newGame(): Game {
     lvl: 1, xp: 0, need: need(1), kills: 0, bab: {}, babN: {}, main: newW('main'), sec: null, rerolls: 0, pendingLv: 0, lvTimes: [],
     nx: { livreur: 60, casseur: 120, videur: 180, fetard: 240 }, nextElite: 120,
     boss: null, bossDone: false, tele: null, rewind: 0, shake: 0, shakeAmp: 0, hitstop: 0, decals: [], nid: 1, banner: null, dirty: 1,
+    slots: Array(SLOTS.total).fill(null), open: SLOTS.start, bag: [], gfr: [],
+    hacker: null, nextHacker: HACKER.first, nextCarrier: CARRIER.first, chainBudget: 30,
   };
   return G;
 }
@@ -91,6 +107,8 @@ export const taken = () => Math.max(0.4, 1 - 0.04 * bv('casque'));
 /** Dégâts = base × (1 + caractéristiques de l'arme + débordement) × (1 + babioles) */
 export const wDmg = (w: Weapon) => WD[w.id].dmg * (1 + w.dmg + w.over) * (1 + bDmg());
 /** Délai entre deux attaques, plancher 0,3 s. */
-export const wDelay = (w: Weapon) => Math.max(0.3, WD[w.id].cd / ((1 + w.spd) * (1 + bSpd())));
+export const wDelay = (w: Weapon) => Math.max(0.3, WD[w.id].cd / ((1 + w.spd) * (1 + bSpd()))) * (w.id === 'main' ? 1.25 ** surcharges() : 1);
+/** Nombre de Surcharge actives dans l'arme (chacune ralentit la cadence de 25 %). */
+export const surcharges = () => G.slots.filter((f) => f === 'surcharge').length;
 /** Rayon / portée / zone, plafonné par arme. */
 export const wZone = (w: Weapon) => Math.min(WD[w.id].cap, WD[w.id].zone * (1 + w.zone) * (1 + bZone()));

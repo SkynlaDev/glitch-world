@@ -1,7 +1,9 @@
 import { audio, setSound } from '../audio/sfx';
 import { fmt, mmss } from '../core/util';
 import { BAB, HEROES, MODE, RAR, UNLOCK, WD } from '../data/game-data';
-import { ICON } from '../data/icons';
+import { FICON, ICON } from '../data/icons';
+import { FRAG, SLOTS } from '../data/fragments';
+import { describeChain, fragAt as at, swapFrag, type FragPos as Pos, type FragPos } from '../game/chain';
 import { makeCards } from '../game/cards';
 import { G, bv, hooks, newGame, settings, wDelay, wDmg, wZone, type Card } from '../game/state';
 import { SPR, sil } from '../render/sprites';
@@ -55,6 +57,8 @@ function buildList() {
     const d = WD[w.id], sp = Object.entries(w.sp).map(([k, v]) => (k === 'count' ? `${v} ${d.sp[0].n}s` : d.sp.find((x) => x.k === k)!.n));
     add(ICON[w.id], `${d.n} niv ${w.lv} : ${fmt(wDmg(w))} dégâts toutes les ${fmt(wDelay(w))} s, ${d.zl} ${fmt(wZone(w))} u${sp.length ? ' · ' + sp.join(', ') : ''}${w.over ? ` · débordement +${fmt(w.over * 100)} %` : ''}`);
   }
+  for (const f of G.slots) if (f) add(FICON[f], `Fragment ${FRAG[f].n} (${FRAG[f].code})`);
+  if (G.slots.some(Boolean)) add(FICON.boucle, describeChain(G.slots).join(' '));
   for (const b of BAB) if (bv(b.id)) add(ICON[b.id], `${b.n} niv ${G.babN[b.id]} : ${b.d(bv(b.id), bv(b.id))}`);
   return ul;
 }
@@ -78,6 +82,58 @@ export function pause() {
     }],
   ]);
 }
+/* ---------- Atelier du hacker ---------- */
+let sel: FragPos | null = null;
+
+export function showHack() {
+  G.state = 'hack';
+  const box = $('cards');
+  box.innerHTML = '';
+  box.classList.remove('menu');
+  const wrap = document.createElement('div');
+  wrap.className = 'hack';
+  const mk = (p: Pos, locked = false) => {
+    const f = locked ? null : at(p), b = document.createElement('button');
+    b.className = 'fs' + (locked ? ' lock' : '') + (sel && sel.z === p.z && sel.i === p.i ? ' sel' : '') + (f ? ` f-${FRAG[f].fam}` : '');
+    const lvl = SLOTS.unlockAt[p.i - SLOTS.start];
+    b.innerHTML = locked ? `<span class="lk">🔒</span><span>Niv ${lvl}</span>` : f ? `${FICON[f]}<span>${FRAG[f].n}</span>` : '<span class="em">vide</span>';
+    if (locked) { b.disabled = true; b.title = `S'ouvre au niveau ${lvl}` }
+    b.onclick = () => {
+      if (!sel) { if (f) sel = p }
+      else if (sel.z === p.z && sel.i === p.i) sel = null;
+      else { swapFrag(sel, p); sel = null }
+      showHack();
+    };
+    return b;
+  };
+  const row = (label: string, items: HTMLElement[], cls: string) => {
+    const r = document.createElement('div');
+    r.className = 'frow ' + cls;
+    const l = document.createElement('span'); l.className = 'fl'; l.textContent = label;
+    r.append(l, ...items);
+    return r;
+  };
+  wrap.append(row('Onde →', G.slots.map((_, i) => mk({ z: 'slot', i }, i >= G.open)), 'chain'));
+  wrap.append(row('Réserve', [...G.bag.map((_, i) => mk({ z: 'bag', i })), mk({ z: 'bag', i: G.bag.length })], 'bag'));
+  const info = document.createElement('div');
+  info.className = 'finfo';
+  const sf = sel ? at(sel) : null;
+  info.innerHTML = sf
+    ? `<strong></strong> <code></code><p></p><p class="hint">Touche un autre emplacement pour l'échanger.</p>`
+    : '<p class="hint">Touche un fragment, puis l’emplacement où le mettre. L’ordre compte : la chaîne se lit de gauche à droite.</p>';
+  if (sf) {
+    info.querySelector('strong')!.textContent = FRAG[sf].n;
+    info.querySelector('code')!.textContent = FRAG[sf].code;
+    info.querySelector('p')!.textContent = FRAG[sf].d;
+  }
+  const res = document.createElement('ul');
+  res.className = 'fres';
+  for (const l of describeChain(G.slots)) { const li = document.createElement('li'); li.textContent = l; res.append(li) }
+  wrap.append(info, res);
+  box.append(wrap);
+  overlay('Hacker', 'Réarrange tes fragments de code.', [['Terminer', () => { sel = null; resume() }, true]]);
+}
+
 export function togglePause() { if (G?.state === 'pause') resume(); else pause() }
 
 export function endRun(win: boolean) {

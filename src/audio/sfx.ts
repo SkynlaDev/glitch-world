@@ -55,7 +55,7 @@ function noise(dur: number, vol: number, type: BiquadFilterType, freq: number, d
 }
 
 /** Intervalle minimal entre deux sons du même nom (s) : évite la bouillie quand 40 zombies meurent en même temps. */
-const GAP: Partial<Record<Sfx, number>> = { hit: 0.03, kill: 0.035, pickup: 0.04, swing: 0.05, arrow: 0.05 };
+const GAP: Partial<Record<Sfx, number>> = { hit: 0.03, kill: 0.035, pickup: 0.04, swing: 0.05, arrow: 0.05, glitch: 0.05 };
 const last: Partial<Record<Sfx, number>> = {};
 let combo = 0, comboT = 0;
 
@@ -88,6 +88,12 @@ export function play(name: Sfx, k = 0) {
     case 'swing': noise(0.12, 0.12, 'highpass', 1800); break;
     case 'arrow': tone('triangle', 900, 1400, 0.05, 0.06); break;
     case 'boom': tone('sine', 110, 30, 0.4, 0.4); noise(0.3, 0.25, 'lowpass', 700); break;
+    // Onde secondaire (écho, scission, déclenchée) : petit coup numérique, sec et granuleux.
+    case 'glitch': tone('square', 240 + Math.random() * 160, 60, 0.07, 0.07 + 0.01 * Math.min(k, 6)); noise(0.05, 0.08, 'bandpass', 3000); break;
+    // Fragment ramassé : arpège qui « saute » comme un bug.
+    case 'frag': [880, 1320, 990, 1760].forEach((f, i) => tone('square', f, f, 0.06, 0.07, i * 0.05)); break;
+    // Atelier du hacker : balayage de modem.
+    case 'hack': tone('sawtooth', 300, 1800, 0.35, 0.08); tone('square', 1200, 400, 0.3, 0.05, 0.15); break;
     case 'chest': [659, 784, 988, 1319].forEach((f, i) => tone('triangle', f, f, 0.18, 0.1, i * 0.06)); break;
   }
 }

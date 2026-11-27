@@ -56,7 +56,7 @@ export const BOSS_TIME = 600;
 
 /** Itération en cours : un seul type d'ennemi (le zombie), sans boss. Tenir jusqu'à BOSS_TIME = victoire.
  *  Repasser à true pour réactiver les ennemis spéciaux (livreur, casseur, videur, fêtard) et DJ Overflow. */
-export const MODE = { specials: false, boss: false };
+export const MODE = { specials: false, boss: false, secondary: false };
 
 /** Variantes visuelles du zombie (même comportement) : poids de tirage. */
 export const ZOMBIE_VARIANTS = [

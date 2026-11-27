@@ -1,30 +1,13 @@
 import { R, hyp, pick } from '../core/util';
 import type { WeaponId } from '../data/game-data';
-import { G, hooks, shake, wDmg, wZone, type Weapon } from './state';
+import { castChain } from './chain';
+import { G, hooks, wDmg, wZone, type Weapon } from './state';
 import { fxp, hit, near } from './world';
 
-/** Onde de l'haltère. Gonflette : +2 % de rayon et +1 % de dégâts par cumul (max 25). */
+/** Onde de l'haltère, passée dans la chaîne de fragments. Gonflette : +2 % de rayon et +1 % de dégâts par cumul (max 25). */
 function fireMain(w: Weapon, x: number, y: number) {
-  const p = G.p, R0 = wZone(w) * (1 + 0.02 * p.st), dm = wDmg(w) * (1 + 0.01 * p.st);
-  let n = 0;
-  near(x, y, R0 + 1.5, (e) => {
-    const dx = e.x - x, dy = e.y - y, d = hyp(dx, dy) || 1;
-    if (d < R0 + e.r) {
-      hit(e, dm); n++;
-      if (w.sp.knock && !e.d.noKnock) { e.kx += (dx / d) * 7; e.ky += (dy / d) * 7 }
-    }
-  });
-  p.st = Math.min(25, p.st + n);
-  if (n) p.lastHit = 0;
-  fxp('ring', x, y, '#29f0ff', R0);
-  // Ressenti : son et tremblement proportionnels au nombre d'ennemis écrasés, fissure au sol,
-  // et un micro-gel de l'image quand l'onde en écrase 8 ou plus.
-  hooks.sfx('slam', n);
-  const k = Math.min(n, 12);
-  shake(0.1 + 0.012 * k, 2 + 0.5 * k);
-  if (n >= 8) G.hitstop = Math.max(G.hitstop, 0.05);
-  G.decals.push({ x, y, r: R0, t: 0, seed: G.nid++ });
-  if (G.decals.length > 6) G.decals.shift();
+  const p = G.p;
+  castChain(w, x, y, 0, 0, wZone(w) * (1 + 0.02 * p.st), wDmg(w) * (1 + 0.01 * p.st), true);
 }
 
 export const FIRE: Record<WeaponId, (w: Weapon) => void> = {

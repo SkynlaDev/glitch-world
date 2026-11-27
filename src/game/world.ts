@@ -1,5 +1,6 @@
 import { R, TAU, hyp } from '../core/util';
 import { BOSSD, ET, ZOMBIE_VARIANTS, need, type EnemyType } from '../data/game-data';
+import { FRAG, FRAG_IDS, SLOTS, type FragId } from '../data/fragments';
 import { G, bv, hooks, settings, shake, taken, type Enemy, type Fx } from './state';
 
 /* ---------- Grille spatiale (cellules de 2 u) ---------- */
@@ -66,6 +67,7 @@ export function kill(e: Enemy) {
   hooks.sfx('kill');
   if (e.boss) { G.boss = null; G.bossDone = true; fxp('boom', e.x, e.y, '#ff2e88', 4); hooks.end(true); return }
   addOrb(e.x, e.y, e.elite ? 10 : 1);
+  if (e.carry) G.gfr.push({ x: e.x, y: e.y, id: rollFrag(), t: 0 });
   if (e.elite) G.chests.push({ x: e.x, y: e.y });
   fxp('pop', e.x, e.y - 0.4, e.d.col);
 }
@@ -83,7 +85,29 @@ export function addOrb(x: number, y: number, v: number) {
   const a = Math.random() * TAU, sp = 1.5 + Math.random();
   G.orbs.push({ x, y, v, mag: 0, t: 0, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp });
 }
+/** Tire un fragment selon les poids de FRAG. */
+export function rollFrag(): FragId {
+  let x = R() * FRAG_IDS.reduce((a, k) => a + FRAG[k].w, 0);
+  for (const k of FRAG_IDS) if ((x -= FRAG[k].w) <= 0) return k;
+  return 'echo';
+}
+/** Ramasse un fragment : il va dans le premier emplacement ouvert libre, sinon dans la réserve (on le placera chez le hacker). */
+export function takeFrag(id: FragId) {
+  const i = G.slots.findIndex((f, k) => !f && k < G.open);
+  if (i >= 0) G.slots[i] = id; else G.bag.push(id);
+  G.dirty = 1;
+  hooks.sfx('frag');
+  G.banner = { t: 2.5, txt: i >= 0 ? `Fragment de code : ${FRAG[id].n}` : `${FRAG[id].n} en réserve · va voir le hacker` };
+}
 export function addXP(v: number) {
   G.xp += v * (1 + 0.05 * bv('manuel'));
-  while (G.xp >= G.need) { G.xp -= G.need; G.lvl++; G.need = need(G.lvl); G.pendingLv++; G.lvTimes.push(G.t); hooks.sfx('level') }
+  while (G.xp >= G.need) {
+    G.xp -= G.need; G.lvl++; G.need = need(G.lvl); G.pendingLv++; G.lvTimes.push(G.t); hooks.sfx('level');
+    if (SLOTS.unlockAt.includes(G.lvl) && G.open < SLOTS.total) {
+      G.open++; G.dirty = 1;
+      G.banner = { t: 3, txt: `Emplacement ${G.open} déverrouillé` };
+      // Un fragment en réserve prend tout de suite la nouvelle place.
+      if (G.bag.length && !G.slots[G.open - 1]) G.slots[G.open - 1] = G.bag.shift()!;
+    }
+  }
 }

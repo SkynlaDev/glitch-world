@@ -15,6 +15,8 @@ const MAPS: Record<string, string[]> = {
   videur: ['....kkkkkkkk....', '...kttttttttk...', '...kttttttttk...', '...kkkkkkkkkk...', '...kttttttttk...', '...ktttTTtttk...', '....kttttttk....', '.kkkkddwwddkkkk.', 'kddddddwwddddddk', 'kdDdddkwwkdddDdk', 'kdDddddwwddddDdk', 'kdDddddkkddddDdk', 'kttddddddddddttk', '.kkddddddddddkk.', '...kddddddddk...', '...kdddkkdddk...', '...kdddkkdddk...', '..kkkkkkkkkkkk..'],
   fetard: ['.....ky.....', '....kyyk....', '...kyyyyk...', '..kssssssk.k', '..ksesseskks', '..kswwwwskvk', '...kSSSSkkvk', '..kvvvvvvvvk', '.ksvvvvvvvk.', '.ksVvvvvvVk.', '..kvvvvvvk..', '..kNNNNNNk..', '..kNNkkNNk..', '..kkk..kkk..'],
   boss: ['....kkkkkkkk....', '...khhhhhhhhk...', '..kcccccccccck..', '.kccksssssskcck.', '.kcckkkkkkkkcck.', '.kcckswwwwskcck.', '..kkkkSSSSkkkk..', '.kppppppppppppk.', 'ksppppppppppppsk', 'kkkkkkkkkkkkkkkk', 'kmmmmmmmmmmmmmmk', 'kmKKKmmccmmKKKmk', 'kmKyKmmppmmKyKmk', 'kmKKKmmccmmKKKmk', 'kmmmmmmmmmmmmmmk', 'kkkkkkkkkkkkkkkk'],
+  // Hacker (provisoire, en attendant un sprite PixelLab) : capuche violette, visière cyan, ordinateur portable.
+  hacker: ['....kkkkkk....', '...kvvvvvvk...', '..kvvvvvvvvk..', '..kvkkkkkkvk..', '..kvkcwcckvk..', '..kvkkkkkkvk..', '...kvvvvvvk...', '.kkvvvvvvvvkk.', 'kvvvvvvvvvvvvk', 'kvvkkkkkkkkvvk', 'kvkaaaaaaaakvk', 'kskacccccaksk.', 'kkkAAAAAAAAkkk', '..kVVVVVVVVk..', '..kVVkkkkVVk..', '..kNNk..kNNk..', '..kkkk..kkkk..'],
   chest: ['.kkkkkkkk.', 'kyyyyyyyyk', 'kYYYYYYYYk', 'kkkkwwkkkk', 'kyyykkyyyk', 'kyyyyyyyyk', 'kYYYYYYYYk', '.kkkkkkkk.'],
   // XP : cubes de pixel (face claire en haut à gauche, face sombre en bas à droite), jamais en croix.
   gem: ['.kkkkk', 'kwwwck', 'kwccCk', 'kwccCk', 'kcCCCk', 'kkkkk.'],
